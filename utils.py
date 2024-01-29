@@ -24,73 +24,56 @@ class set_coords:
     # switch_scoreB: list[pdf_box] = field(default=list)
     final_scoreB:  pdf_box = None
 
-# class coord:
-    # def __init__(self, x, y):
-        # self.x=x
-        # self.y=y
-    # def __str__(self):
-        # return f"({self.x},{self.y})"
+@dataclass
+class tiebreak_coords:
+    name_left:pdf_box=None
+    name_middle:pdf_box=None
+    name_right:pdf_box=None
+    final_score_left:pdf_box=None
+    final_score_middle:pdf_box=None 
+    final_score_right:pdf_box=None
 
-# class pdf_box:
-    # def __init__(self, x, y, W, H):
-        # self.x=x
-        # self.y=y
-        # self.W=W
-        # self.H=H
 
-    # def __str__(self):
-        # return f"pdf box: ({self.x} {self.y} {self.W} {self.H})"
+@dataclass
+class substitution:
+    playerout:int=None
+    playerin:int=None
+    score:list[int]=field(default=list)
+    backsubstitution:int=None
 
-# class pdf_coords:
-    # def __init__(self, set=[None]*5):
-        # self.set=set
-
-# class set_coords:
-    # def __init__(self, num=None, startingA=[None]*6, switchA=[None]*6, switch_scoreA=[[None]*2]*6, final_scoreA=[None], startingB=[None]*6, switchB=[None]*6, switch_scoreB=[[None]*2]*6, final_scoreB=[None]):
-        # self.num=num
-        # self.startingA=startingA
-        # self.switchA=switchA
-        # self.switch_scoreA=switch_scoreA
-        # self.final_scoreA=final_scoreA
-        # self.startingB=startingB
-        # self.switchB=switchB
-        # self.switch_scoreB=switch_scoreB
-        # self.final_scoreB=final_scoreB
+    def __str__(self):
+        if self.backsubstitution:
+            return f"Substitution: {self.playerin} <- {self.playerout} at {self.score[0]}:{self.score[1]}"
+        else:
+            return f"Substitution: {self.playerout} -> {self.playerin} at {self.score[0]}:{self.score[1]}"
 
 
 @dataclass
 class set:
     num:int=None
     final_score:list[int]=field(default=list)
+    starting:list[int]=field(default=list)
     players:list[int]=field(default=list)
-    switches:list[int]=field(default=list)
-    # def __init__(self, num=0, final_score=[None]*2, players=[None]*6, switches=[]):
-        # self.num=num
-        # self.final_score=final_score
-        # self.players=players
-        # self.switches=switches
+    substitutions:list[substitution]=field(default=list)
 
     def __str__(self):
         strout = f"Set {self.num}.\n"
         strout+=f"Final score {self.final_score}\n"
-        strout+=f"Starting players: {self.players}\n"
-        strout+=f"Switches:\n"
-        for i in range(len(self.switches)):
-            strout+=f"{self.switches[i]}\n"
+        strout+=f"Starting players: {self.starting}\n"
+        strout+=f"Participating players: {self.players}\n"
+        strout+=f"Substitutions:\n"
+        for i in range(len(self.substitutions)):
+            strout+=f"{self.substitutions[i]}\n"
         return strout
 
 @dataclass
-class switch:
-    playerout:int=None
-    playerin:int=None
-    score:list[int]=field(default=list)
-    # def __init__(self, playerout=None, playerin=None, score=[None]*2):
-        # self.playerout=playerout
-        # self.playerin=playerin
-        # self.score=score
-
-    def __str__(self):
-        return f"Switch: {self.playerout} -> {self.playerin} at {self.score[0]}:{self.score[1]}"
+class match:
+    opponent:str=''
+    n_players:int=None
+    player_numbers:list[int]=field(default=list)
+    player_names:list[str]=field(default=list)
+    # points_played:list[int]=field(default=list)
+    setlist:list[set]=field(default=list)
 
 
 def pdf2str(pdffile,pdf_box):
@@ -100,5 +83,10 @@ def pdf2str(pdffile,pdf_box):
     ret = ret.strip()
     return ret
 
-
-# def 
+@dataclass
+class match_statistics:
+    player_numbers:list[int]=field(default=list)
+    player_names:list[int]=field(default=list)
+    points_played:list[int]=field(default=list)
+    starting_sets:list[int]=field(default=list)
+    total_points:int=None

@@ -1,8 +1,27 @@
 from utils import *
-import copy
+
+# coordinates of team names (taken from player overview)
+letter_left =pdf_box(590  , 296.16, 12, 14)
+letter_right=pdf_box(705.6, 296.16, 12, 14)
+team_left   =pdf_box(603  ,296.2  , 78, 12)
+team_right  =pdf_box(718.5,296.2  , 78, 12)
+
+n_players_left=pdf_box(682, 296.2, 21, 12)
+n_players_right=pdf_box(797, 296.2, 21, 12)
+
+# get coordinates of playerinfo
+playerinfo_vstride=9.75
+player_numbers_left  = pdf_box(591.15, 309.00, 10.5, 10)
+player_names_left    = pdf_box(602.3 , 309.00, 90  , 10)
+player_numbers_right = pdf_box(705.58, 311.91, 10.5, 10)
+player_names_right   = pdf_box(716.8 , 311.91, 90  , 10)
 
 # initialize class for pdf coordinates to read info
 set=[]
+tb=tiebreak_coords()
+tb.starting_left=[pdf_box]*6
+tb.starting_middle=[pdf_box]*6
+tb.starting_right=[pdf_box]*6
 for i in range(5):
     set.append(set_coords())
     set[i].startingA= [pdf_box()]*6
@@ -23,27 +42,12 @@ set[2].final_scoreB=pdf_box(407,211,25,45)
 set[3].final_scoreA=pdf_box(738,211,25,45)
 set[3].final_scoreB=pdf_box(582,211,25,45)
 # set 4
-# set[4].final_scoreA=pdf_box(738,211,25,45)
-# set[4].final_scoreB=pdf_box(582,211,25,45)
-
-# final results coordinates
-# finalA=[]
-# finalB=[]
-# # set 1
-# finalA.append(pdf_box(251,97,25,45))
-# finalB.append(pdf_box(407,97,25,45))
-# # set 2
-# finalA.append(pdf_box(738,97,25,45))
-# finalB.append(pdf_box(582,97,25,45))
-# # set 3
-# finalA.append(pdf_box(251,211,25,45))
-# finalB.append(pdf_box(407,211,25,45))
-# # set 4
-# finalA.append(pdf_box(738,211,25,45))
-# finalB.append(pdf_box(582,211,25,45))
-# # set 5
-# # finalA.append(pdf_box(738,97,25,45))
-# # finalB.append(pdf_box(582,97,25,45))
+tb.name_left          = pdf_box(165.8, 297, 84, 15)
+tb.name_middle        = pdf_box(321.7, 297, 84, 15)
+tb.name_right         = pdf_box(477.8, 297, 84, 15)
+tb.final_score_left   = pdf_box(251.2, 325, 25, 44)
+tb.final_score_middle = pdf_box(407.1, 325, 25, 44)
+tb.final_score_right  = pdf_box(563.2, 325, 25, 44)
 
 
 # starting position coordinates
@@ -107,6 +111,27 @@ set[3].startingB[2]=pdf_box(496.36,210.67,pos_width,pos_height)
 set[3].startingB[3]=pdf_box(517.35,210.67,pos_width,pos_height)
 set[3].startingB[4]=pdf_box(539.1 ,210.67,pos_width,pos_height)
 set[3].startingB[5]=pdf_box(560.05,210.67,pos_width,pos_height)
+# set 5
+tb.starting_left[0]=pdf_box(123.1, 325, pos_width, pos_height)
+tb.starting_left[1]=pdf_box(144  , 325, pos_width, pos_height)
+tb.starting_left[2]=pdf_box(166  , 325, pos_width, pos_height)
+tb.starting_left[3]=pdf_box(187  , 325, pos_width, pos_height)
+tb.starting_left[4]=pdf_box(209  , 325, pos_width, pos_height)
+tb.starting_left[5]=pdf_box(229.5, 325, pos_width, pos_height)
+
+tb.starting_middle[0]=pdf_box(279.2, 325, pos_width, pos_height)
+tb.starting_middle[1]=pdf_box(299.9, 325, pos_width, pos_height)
+tb.starting_middle[2]=pdf_box(321.7, 325, pos_width, pos_height)
+tb.starting_middle[3]=pdf_box(342.7, 325, pos_width, pos_height)
+tb.starting_middle[4]=pdf_box(364.6, 325, pos_width, pos_height)
+tb.starting_middle[5]=pdf_box(385.3, 325, pos_width, pos_height)
+
+tb.starting_right[0]=pdf_box(435  , 325, pos_width, pos_height)
+tb.starting_right[1]=pdf_box(456  , 325, pos_width, pos_height)
+tb.starting_right[2]=pdf_box(477.6, 325, pos_width, pos_height)
+tb.starting_right[3]=pdf_box(498.5, 325, pos_width, pos_height)
+tb.starting_right[4]=pdf_box(520.4, 325, pos_width, pos_height)
+tb.starting_right[5]=pdf_box(541.5, 325, pos_width, pos_height)
 
 # starting position coordinates
 # units in pt
