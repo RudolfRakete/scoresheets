@@ -5,10 +5,21 @@ from utils import *
 
 
 def extract_game_info(pdffile):
-    current_match=match()
+    current_match=VBmatch()
     current_match.setlist=[]
-    current_match.player_names=[]
-    current_match.player_numbers=[]
+    current_match.players=[]
+    # current_match.player_names=[]
+    # current_match.player_numbers=[]
+
+    # get match id
+    title=pdf2str(pdffile, coords.title)
+    reg=re.search('Spiel (\d+)', title)
+    # print(title)
+    if reg:
+        current_match.id=int(reg.group(1))
+    else:
+        raise Exception(f"Could not extract match id from title: {title}")
+    # print('id:', match_id)
 
     # get team names and determine if SVP is A or B
     letter_left=pdf2str(pdffile, coords.letter_left)
@@ -66,9 +77,10 @@ def extract_game_info(pdffile):
         # print(number,name)
         if (number=='') or (name==''):
             raise Exception(f"Could not read all players from playerinfo.\nSuccessfully read:{current_match.player_names}.")
-        current_match.player_numbers.append(int(number))
+        # current_match.player_numbers.append(int(number))
         name=re.sub('^[C|★] ', '', name)
-        current_match.player_names.append(name)
+        # current_match.player_names.append(name)
+        current_match.players.append(player(name=name, number=int(number)))
         # print(number, name)
         coord_player_num.y+=coords.playerinfo_vstride
         coord_player_name.y+=coords.playerinfo_vstride
@@ -79,8 +91,8 @@ def extract_game_info(pdffile):
     # extract information from score sheet
     for iset in range(4):
         # read final results
-        scoreA_str=pdf2str(pdffile, coords.set[iset].final_scoreA)
-        scoreB_str=pdf2str(pdffile, coords.set[iset].final_scoreB)
+        scoreA_str=pdf2str(pdffile, coords.VBset[iset].final_scoreA)
+        scoreB_str=pdf2str(pdffile, coords.VBset[iset].final_scoreB)
 
         # check if set was played
         if scoreA_str=="":
@@ -89,7 +101,7 @@ def extract_game_info(pdffile):
         scoreB=int(scoreB_str)
 
         # initialize current set
-        current_set=set()
+        current_set=VBset()
         current_set.num=iset+1
         current_set.starting=[None]*6
         current_set.players=[]
@@ -103,9 +115,9 @@ def extract_game_info(pdffile):
 
         # read starting player information and raw substitution data
         if AorB=='A':
-            pos = coords.set[iset].startingA
+            pos = coords.VBset[iset].startingA
         elif AorB=='B':
-            pos = coords.set[iset].startingB
+            pos = coords.VBset[iset].startingB
 
         for ipos in range(6):
             # starting players
@@ -128,7 +140,7 @@ def extract_game_info(pdffile):
             if sw1_score_str != "":
                 sw_player=int(sw_player_str)
                 sw1_score = list(map(int, re.findall(r'\d+', sw1_score_str)))
-                current_subst=substitution(playerin=sw_player,playerout=current_player,score=sw1_score, backsubstitution=0)
+                current_subst=VBsubstitution(playerin=sw_player,playerout=current_player,score=sw1_score, backsubstitution=0)
                 current_set.players.append(sw_player)
                 current_set.substitutions.append(current_subst)
 
@@ -136,7 +148,7 @@ def extract_game_info(pdffile):
             if sw2_score_str != "":
                 sw_player=int(sw_player_str)
                 sw2_score = list(map(int, re.findall(r'\d+', sw2_score_str)))
-                current_subst=substitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
+                current_subst=VBsubstitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
                 current_set.substitutions.append(current_subst)
 
 
@@ -162,7 +174,7 @@ def extract_game_info(pdffile):
     
     # check if tiebreak is recorded
     if tb_name_left!='':
-        current_set=set()
+        current_set=VBset()
         current_set.num=5
         current_set.starting=[None]*6
         current_set.players=[]
@@ -200,7 +212,7 @@ def extract_game_info(pdffile):
                 if sw1_score_str != "":
                     sw_player=int(sw_player_str)
                     sw1_score = list(map(int, re.findall(r'\d+', sw1_score_str)))
-                    current_subst=substitution(playerin=sw_player,playerout=current_player,score=sw1_score, backsubstitution=0)
+                    current_subst=VBsubstitution(playerin=sw_player,playerout=current_player,score=sw1_score, backsubstitution=0)
                     current_set.players.append(sw_player)
                     current_set.substitutions.append(current_subst)
 
@@ -208,7 +220,7 @@ def extract_game_info(pdffile):
                 if sw2_score_str != "":
                     sw_player=int(sw_player_str)
                     sw2_score = list(map(int, re.findall(r'\d+', sw2_score_str)))
-                    current_subst=substitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
+                    current_subst=VBsubstitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
                     current_set.substitutions.append(current_subst)
 
                 # read substitutions (right side)
@@ -226,7 +238,7 @@ def extract_game_info(pdffile):
                 if sw1_score_str != "":
                     sw_player=int(sw_player_str)
                     sw1_score = list(map(int, re.findall(r'\d+', sw1_score_str)))
-                    current_subst=substitution(playerin=sw_player,playerout=current_player,score=sw1_score, backsubstitution=0)
+                    current_subst=VBsubstitution(playerin=sw_player,playerout=current_player,score=sw1_score, backsubstitution=0)
                     current_set.players.append(sw_player)
                     current_set.substitutions.append(current_subst)
 
@@ -234,7 +246,7 @@ def extract_game_info(pdffile):
                 if sw2_score_str != "":
                     sw_player=int(sw_player_str)
                     sw2_score = list(map(int, re.findall(r'\d+', sw2_score_str)))
-                    current_subst=substitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
+                    current_subst=VBsubstitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
                     current_set.substitutions.append(current_subst)
 
 
@@ -246,6 +258,7 @@ def extract_game_info(pdffile):
                 current_set.final_score=[final_score_left,final_score_middle]
         # SVP is in the middle
         else:
+            print('UNTESTED CODE!!')
             print('SVP is in the middle')
             # read starting player info
             for ipos in range(6):
@@ -268,7 +281,7 @@ def extract_game_info(pdffile):
                 if sw1_score_str != "":
                     sw_player=int(sw_player_str)
                     sw1_score = list(map(int, re.findall(r'\d+', sw1_score_str)))
-                    current_subst=substitution(playerin=sw_player,playerout=current_player,score=sw1_score, backsubstitution=0)
+                    current_subst=VBsubstitution(playerin=sw_player,playerout=current_player,score=sw1_score, backsubstitution=0)
                     current_set.players.append(sw_player)
                     current_set.substitutions.append(current_subst)
 
@@ -276,7 +289,7 @@ def extract_game_info(pdffile):
                 if sw2_score_str != "":
                     sw_player=int(sw_player_str)
                     sw2_score = list(map(int, re.findall(r'\d+', sw2_score_str)))
-                    current_subst=substitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
+                    current_subst=VBsubstitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
                     current_set.substitutions.append(current_subst)
 
             if tb_sides_switched:

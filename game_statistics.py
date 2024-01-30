@@ -1,39 +1,44 @@
-from utils import match_statistics
+from utils import statistics, player_statistics
 
-def player_statistics(match):
-    stat=match_statistics()
-    stat.player_numbers=match.player_numbers
-    stat.player_names=match.player_names
-    stat.points_played=[0]*len(match.player_numbers)
-    stat.starting_sets=[0]*len(match.player_numbers)
+def match2stat(match):
+    print(match)
+    match_stat=statistics()
 
-    # print(stat)
-    # print(stat.player_numbers.index(13))
-    # print(stat.player_names[stat.player_numbers.index(13)])
+    # initialize player statistics for the match
+    for p in match.players:
+        player=player_statistics(name=p.name, numbers=[p.number])
+        match_stat.player.append(player)
 
     points_in_match=0
     for set in match.setlist:
         points_in_set=sum(set.final_score)
         points_in_match+=points_in_set
-        # print(points_in_set)
 
 
         # add total points played in match to each player. subtract points if
         # player is substituted
-        for player in set.starting:
-            ind_player=stat.player_numbers.index(player)
-            stat.starting_sets[ind_player]+=1
-            stat.points_played[ind_player]+=points_in_set
+        for player_num in set.starting:
+            # get player name from number
+            player=match.num2player(player_num)
+            match_stat.add_player_stat(player_statistics(name=player.name, matches=[match.id], starting_sets=[1], points_played=[points_in_set]))
 
         # loop through substitutions and transfer points from players (out) to players (in)
         for subst in set.substitutions:
             points_played_at_subst=sum(subst.score)
-            ind_playerout=stat.player_numbers.index(subst.playerout)
-            ind_playerin=stat.player_numbers.index(subst.playerin)
-            stat.points_played[ind_playerout]-=points_in_set-points_played_at_subst
-            stat.points_played[ind_playerin ]+=points_in_set-points_played_at_subst
+            playerin=match.num2player(subst.playerin)
+            playerout=match.num2player(subst.playerout)
+            points_to_end_of_set=points_in_set-points_played_at_subst
+            match_stat.add_player_stat(player_statistics(name=playerin.name, matches=[match.id], points_played=[points_to_end_of_set]))
+            match_stat.add_player_stat(player_statistics(name=playerout.name, matches=[match.id], points_played=[-points_to_end_of_set]))
 
-    stat.total_points=points_in_match
+    match_stat.total_points=points_in_match
+    match_stat.total_sets=len(match.setlist)
 
-    print(stat)
+    for p in match.players:
+        # add points present to all players in the match
+        match_stat.add_player_stat(player_statistics(name=p.name, matches=[match.id], points_present=[points_in_match]))
+
+
+    # print(match_stat)
+    return match_stat
 
