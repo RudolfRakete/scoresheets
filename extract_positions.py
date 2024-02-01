@@ -53,7 +53,7 @@ def extract_game_info(pdffile, team_name_regex):
     elif re.search(team_name_regex, team_header_right):
         teamlist=teamlist_right
     else:
-        raise Exception('Could not find \'{team_name_regex}\' in teamlist header')
+        raise Exception(f"Could not find \'{team_name_regex}\' in teamlist header")
 
     # print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
     is_libero=0
@@ -342,8 +342,8 @@ def extract_game_info(pdffile, team_name_regex):
         # team is in the middle
         # else:
         elif re.search(team_name_regex, tb_name_middle):
-            print('UNTESTED CODE!!')
-            print('tracked team is in the middle of tiebreak')
+            # print('UNTESTED CODE!!')
+            # print('tracked team is in the middle of tiebreak')
             # read starting player info
             for ipos in range(6):
                 current_player=int(pdf2str(pdffile, coords.tb.starting_middle[ipos]))
@@ -375,13 +375,14 @@ def extract_game_info(pdffile, team_name_regex):
                     sw2_score = list(map(int, re.findall(r'\d+', sw2_score_str)))
                     current_subst=VBsubstitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
                     current_set.substitutions.append(current_subst)
+
+                if tb_sides_switched:
+                    current_set.final_score=[final_score_middle,final_score_right]
+                else:
+                    current_set.final_score=[final_score_middle,final_score_left]
         else:
             raise Exception('Could not find {team_name_regex} in header for tiebreak: {tb_name_left},{tb_name_middle}')
 
-            if tb_sides_switched:
-                current_set.final_score=[final_score_middle,final_score_right]
-            else:
-                current_set.final_score=[final_score_middle,final_score_left]
 
         # print(current_set)
 

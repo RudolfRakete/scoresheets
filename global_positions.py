@@ -1,6 +1,6 @@
 from utils import *
 
-title=pdf_box(320, 24, 297, 38)
+title=pdf_box(300, 24, 300, 38)
 
 teamlist_left=pdf_box(590, 296, 113, 215)
 teamlist_right=pdf_box(706, 296, 113, 215)

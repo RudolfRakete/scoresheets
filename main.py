@@ -4,15 +4,20 @@ from game_statistics import match2stat
 import pickle
 import glob
 
-# path='./scoresheets/SVP/'
-# team_name='SVP'
-# team_name_regex='Preu[ss|ß]en Berlin'
+path='./scoresheets/SVP/'
+team_name='SVP'
+team_name_regex='Preußen Berlin'
+scoresheets=glob.glob('/'.join([path,'*.pdf']))
+
+# path='./scoresheets/BVV/'
+# team_name='BVV'
+# team_name_regex='Berliner VV'
 # scoresheets=glob.glob('/'.join([path,'*.pdf']))
 
-path='./scoresheets/BVV/'
-team_name='BVV'
-team_name_regex='Berliner VV'
-scoresheets=glob.glob('/'.join([path,'*.pdf']))
+# path='./scoresheets/BRV/'
+# team_name='BRV'
+# team_name_regex='BERLIN RECYCLING|Berlin'
+# scoresheets=glob.glob('/'.join([path,'*.pdf']))
 
 # scoresheets=['2074.pdf', '2071.pdf', '2025.pdf']
 # scoresheets=['./scoresheets/SVP/2025.pdf']
