@@ -1,3 +1,4 @@
+import os
 import re
 import copy
 import global_positions as coords
@@ -5,6 +6,8 @@ from utils import *
 
 
 def extract_game_info(pdffile):
+    if not os.path.isfile(pdffile):
+        raise Exception(f"Scoresheet not found. {pdffile}")
     current_match=VBmatch()
     current_match.setlist=[]
     current_match.players=[]
@@ -13,77 +16,145 @@ def extract_game_info(pdffile):
 
     # get match id
     title=pdf2str(pdffile, coords.title)
-    reg=re.search('Spiel (\d+)', title)
-    # print(title)
-    if reg:
-        current_match.id=int(reg.group(1))
+    # get team names and determine if SVP is A or B
+    reg=re.search('([AB]) (.*) vs\. (.*) ([AB])', title)
+    if not reg:
+        raise Exception(f"Could not determine teams and letters (A/B) from title: {title}")
+
+    # print(reg.group(1))
+    # print(reg.group(2))
+    # print(reg.group(3))
+    # print(reg.group(4))
+
+    if re.search('Preu[ss|ß]en Berlin', reg.group(2)):
+        AorB=reg.group(1)
+        current_match.opponent=reg.group(3)
+    elif re.search('Preu[ss|ß]en Berlin', reg.group(3)):
+        AorB=reg.group(4)
+        current_match.opponent=reg.group(2)
+    else:
+        raise Exception(f"Could not find Preu[ss|ß]en Berlin in title: {title}")
+
+    reg_id=re.search('Spiel (\d+)', title)
+    if reg_id:
+        current_match.id=int(reg_id.group(1))
     else:
         raise Exception(f"Could not extract match id from title: {title}")
-    # print('id:', match_id)
 
-    # get team names and determine if SVP is A or B
-    letter_left=pdf2str(pdffile, coords.letter_left)
-    letter_right=pdf2str(pdffile, coords.letter_right)
-    if (letter_left=='') or (letter_right==''):
-        raise Exception('Could not read team letters (A/B) from player list.')
-    # print(letter_left)
-    # print(letter_right)
-    name_left=pdf2str(pdffile, coords.team_left)
-    name_right=pdf2str(pdffile, coords.team_right)
-    # print(nameA, nameB)
+    print(f"Reading scoresheet for match {current_match.id} against {current_match.opponent}")
 
-    if re.match('Preu[ss|ß]en Berlin', name_left):
-        AorB=letter_left
-        LorR='L'
-        current_match.opponent=name_right
-    elif re.match('Preu[ss|ß]en Berlin', name_right):
-        AorB=letter_right
-        LorR='R'
-        current_match.opponent=name_left
+    teamlist_left=pdf2str(pdffile, coords.teamlist_left).split('\n')
+    teamlist_right=pdf2str(pdffile, coords.teamlist_right).split('\n')
+    team_header_left=teamlist_left[0]
+    team_header_right=teamlist_right[0]
+
+    if re.search('Preu[ss|ß]en Berlin', team_header_left):
+        teamlist=teamlist_left
+    elif re.search('Preu[ss|ß]en Berlin', team_header_right):
+        teamlist=teamlist_right
     else:
-        raise Exception('Could not determine if SVP is team A or B.')
-    # print(AorB)
-    print(current_match.opponent)
+        raise Exception('Could not find \'Preu[ss|ß]en Berlin\' in teamlist header')
 
-    # get number of players
-    if LorR=='L':
-        n_players_str=pdf2str(pdffile,coords.n_players_left)
-        coord_player_num=copy.copy(coords.player_numbers_left)
-        coord_player_name=copy.copy(coords.player_names_left)
-    else:
-        n_players_str=pdf2str(pdffile,coords.n_players_right)
-        coord_player_num=copy.copy(coords.player_numbers_right)
-        coord_player_name=copy.copy(coords.player_names_right)
+    # print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+    is_libero=0
+    for line in teamlist:
+        # print('line:',line)
+        reg_header=re.search('[AB] (.*)', line)
+        if reg_header:
+            # found header
+            # print('found header')
+            # print(reg_header.group(1))
+            if reg_header.group(1)=='Libero':
+                is_libero=1
+            elif reg_header.group(1)=='Offizielle':
+                is_libero=0
+        reg_player=re.search('(\d+) (.*)', line)
+        if reg_player:
+            # found player
+            # print('found player')
+            number = reg_player.group(1)
+            name = reg_player.group(2)
+            # print(name)
+            # print(number)
+            # remove special marks from player names (neede twice if both are present)
+            name=re.sub('^[C|★] ', '', name)
+            name=re.sub('^[C|★] ', '', name)
+            if not is_libero:
+                current_match.players.append(player(name=name, number=int(number)))
+            else:
+                lib_player = current_match.num2player(int(number))
+                lib_player.is_libero=1
+            # print(num)
+            # print(name)
+        reg_official=re.search('(T|CT|SC|P) (.*)', line)
+        if reg_official:
+            # print('found official')
+            # found official
+            # print(reg_official.group(1))
+            # print(reg_official.group(2))
+            official_type=reg_official.group(1)
+            name=reg_official.group(2)
+            # print(name)
+            # print(official_type)
+            current_match.players.append(player(name=name, number=official_type))
 
-    current_match.n_players = int(re.findall('\d+', n_players_str)[0])
 
-    # if AorB=='A':
-        # current_match.n_players=n_playersA
-        # coord_player_num=coords.player_numbersA
-        # coord_player_name=coords.player_namesA
+
+    # determine if playerlist is left or right
+    # name_left=pdf2str(pdffile, coords.team_left)
+    # name_right=pdf2str(pdffile, coords.team_right)
+
+    # if re.match('Preu[ss|ß]en Berlin', name_left):
+        # # AorB=letter_left
+        # LorR='L'
+        # # current_match.opponent=name_right
+    # elif re.match('Preu[ss|ß]en Berlin', name_right):
+        # # AorB=letter_right
+        # LorR='R'
+        # # current_match.opponent=name_left
     # else:
-        # current_match.n_players=n_playersB
-        # coord_player_num=coords.player_numbersB
-        # coord_player_name=coords.player_namesB
+        # raise Exception('Could not determine if SVP is team A or B.')
+    # # print(AorB)
+    # print(f"Reading scoresheet for match {current_match.id} against {current_match.opponent}")
 
-    # get player numbers and names
-    for iplayer in range(current_match.n_players):
-        # print(iplayer)
-        number=pdf2str(pdffile, coord_player_num)
-        name=pdf2str(pdffile, coord_player_name)
-        # print(iplayer)
-        # print(coord_player_num)
-        # print(coord_player_name)
-        # print(number,name)
-        if (number=='') or (name==''):
-            raise Exception(f"Could not read all players from playerinfo.\nSuccessfully read:{current_match.player_names}.")
-        # current_match.player_numbers.append(int(number))
-        name=re.sub('^[C|★] ', '', name)
-        # current_match.player_names.append(name)
-        current_match.players.append(player(name=name, number=int(number)))
-        # print(number, name)
-        coord_player_num.y+=coords.playerinfo_vstride
-        coord_player_name.y+=coords.playerinfo_vstride
+    # # get number of players
+    # if LorR=='L':
+        # n_players_str=pdf2str(pdffile,coords.n_players_left)
+        # coord_player_num=copy.copy(coords.player_numbers_left)
+        # coord_player_name=copy.copy(coords.player_names_left)
+    # else:
+        # n_players_str=pdf2str(pdffile,coords.n_players_right)
+        # coord_player_num=copy.copy(coords.player_numbers_right)
+        # coord_player_name=copy.copy(coords.player_names_right)
+
+    # current_match.n_players = int(re.findall('\d+', n_players_str)[0])
+
+    # # if AorB=='A':
+        # # current_match.n_players=n_playersA
+        # # coord_player_num=coords.player_numbersA
+        # # coord_player_name=coords.player_namesA
+    # # else:
+        # # current_match.n_players=n_playersB
+        # # coord_player_num=coords.player_numbersB
+        # # coord_player_name=coords.player_namesB
+
+    # # get player numbers and names
+    # for iplayer in range(current_match.n_players):
+        # # print(iplayer)
+        # number=pdf2str(pdffile, coord_player_num)
+        # name=pdf2str(pdffile, coord_player_name)
+        # # print(iplayer)
+        # # print(coord_player_num)
+        # # print(coord_player_name)
+        # # print(number,name)
+        # if (number=='') or (name==''):
+            # raise Exception(f"Could not read all players from playerinfo.\nSuccessfully read:{current_match.player_names}.")
+        # # current_match.player_numbers.append(int(number))
+        # name=re.sub('^[C|★] ', '', name)
+        # current_match.players.append(player(name=name, number=int(number)))
+        # # print(number, name)
+        # coord_player_num.y+=coords.playerinfo_vstride
+        # coord_player_name.y+=coords.playerinfo_vstride
 
 
 
@@ -97,6 +168,9 @@ def extract_game_info(pdffile):
         # check if set was played
         if scoreA_str=="":
             continue
+        # check if any sanction points are marked below final score (looking at you, Kai!!! -.-)
+        scoreA_str = scoreA_str.split('\n')[0]
+        scoreB_str = scoreB_str.split('\n')[0]
         scoreA=int(scoreA_str)
         scoreB=int(scoreB_str)
 
@@ -152,7 +226,7 @@ def extract_game_info(pdffile):
                 current_set.substitutions.append(current_subst)
 
 
-        print(current_set)
+        # print(current_set)
 
 
         # add set to setlist
@@ -163,9 +237,9 @@ def extract_game_info(pdffile):
     tb_name_middle=pdf2str(pdffile, coords.tb.name_middle)
     tb_name_right=pdf2str(pdffile, coords.tb.name_right)
 
-    print(tb_name_left)
-    print(tb_name_middle)
-    print(tb_name_right)
+    # print(tb_name_left)
+    # print(tb_name_middle)
+    # print(tb_name_right)
 
     tb_sides_switched=False
     if tb_name_right!='':
@@ -297,7 +371,7 @@ def extract_game_info(pdffile):
             else:
                 current_set.final_score=[final_score_middle,final_score_left]
 
-        print(current_set)
+        # print(current_set)
 
         current_match.setlist.append(current_set)
 

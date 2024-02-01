@@ -1,7 +1,7 @@
 from utils import statistics, player_statistics
 
 def match2stat(match):
-    print(match)
+    # print(match)
     match_stat=statistics()
 
     # initialize player statistics for the match

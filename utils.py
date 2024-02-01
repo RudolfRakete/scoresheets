@@ -51,6 +51,7 @@ class VBsubstitution:
 class player:
     name:str=''
     number:int=None
+    is_libero:int=0
 
 @dataclass
 class VBset:
@@ -76,6 +77,8 @@ class VBmatch:
     id:int=None
     # n_players:int=None
     players:list[player]=field(default_factory=lambda: [])
+    liberos:list[player]=field(default_factory=lambda: [])
+    officials:list[player]=field(default_factory=lambda: [])
     # player_numbers:list[int]=field(default=list)
     # player_names:list[str]=field(default=list)
     # points_played:list[int]=field(default=list)
