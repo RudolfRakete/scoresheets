@@ -5,7 +5,7 @@ import global_positions as coords
 from utils import *
 
 
-def extract_game_info(pdffile):
+def extract_game_info(pdffile, team_name_regex):
     if not os.path.isfile(pdffile):
         raise Exception(f"Scoresheet not found. {pdffile}")
     current_match=VBmatch()
@@ -16,7 +16,7 @@ def extract_game_info(pdffile):
 
     # get match id
     title=pdf2str(pdffile, coords.title)
-    # get team names and determine if SVP is A or B
+    # get team names and determine if tracked team is A or B
     reg=re.search('([AB]) (.*) vs\. (.*) ([AB])', title)
     if not reg:
         raise Exception(f"Could not determine teams and letters (A/B) from title: {title}")
@@ -26,14 +26,14 @@ def extract_game_info(pdffile):
     # print(reg.group(3))
     # print(reg.group(4))
 
-    if re.search('Preu[ss|ß]en Berlin', reg.group(2)):
+    if re.search(team_name_regex, reg.group(2)):
         AorB=reg.group(1)
         current_match.opponent=reg.group(3)
-    elif re.search('Preu[ss|ß]en Berlin', reg.group(3)):
+    elif re.search(team_name_regex, reg.group(3)):
         AorB=reg.group(4)
         current_match.opponent=reg.group(2)
     else:
-        raise Exception(f"Could not find Preu[ss|ß]en Berlin in title: {title}")
+        raise Exception(f"Could not find \'{team_name_regex}\' in title: {title}")
 
     reg_id=re.search('Spiel (\d+)', title)
     if reg_id:
@@ -48,12 +48,12 @@ def extract_game_info(pdffile):
     team_header_left=teamlist_left[0]
     team_header_right=teamlist_right[0]
 
-    if re.search('Preu[ss|ß]en Berlin', team_header_left):
+    if re.search(team_name_regex, team_header_left):
         teamlist=teamlist_left
-    elif re.search('Preu[ss|ß]en Berlin', team_header_right):
+    elif re.search(team_name_regex, team_header_right):
         teamlist=teamlist_right
     else:
-        raise Exception('Could not find \'Preu[ss|ß]en Berlin\' in teamlist header')
+        raise Exception('Could not find \'{team_name_regex}\' in teamlist header')
 
     # print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
     is_libero=0
@@ -104,16 +104,16 @@ def extract_game_info(pdffile):
     # name_left=pdf2str(pdffile, coords.team_left)
     # name_right=pdf2str(pdffile, coords.team_right)
 
-    # if re.match('Preu[ss|ß]en Berlin', name_left):
+    # if re.match(team_name_regex, name_left):
         # # AorB=letter_left
         # LorR='L'
         # # current_match.opponent=name_right
-    # elif re.match('Preu[ss|ß]en Berlin', name_right):
+    # elif re.match(team_name_regex, name_right):
         # # AorB=letter_right
         # LorR='R'
         # # current_match.opponent=name_left
     # else:
-        # raise Exception('Could not determine if SVP is team A or B.')
+        # raise Exception('Could not determine if tracked team is team A or B.')
     # # print(AorB)
     # print(f"Reading scoresheet for match {current_match.id} against {current_match.opponent}")
 
@@ -247,7 +247,10 @@ def extract_game_info(pdffile):
 
     
     # check if tiebreak is recorded
-    if tb_name_left!='':
+    reg1=re.search(team_name_regex, tb_name_left)
+    reg2=re.search(team_name_regex, tb_name_middle)
+    # if tb_name_left!='':
+    if reg1 or reg2:
         current_set=VBset()
         current_set.num=5
         current_set.starting=[None]*6
@@ -255,16 +258,22 @@ def extract_game_info(pdffile):
         current_set.substitutions=[]
         print("Reading info for set 5 (tiebreak)")
 
-        final_score_left=int(pdf2str(pdffile, coords.tb.final_score_left))
-        final_score_middle=int(pdf2str(pdffile, coords.tb.final_score_middle))
-        final_score_right=int(pdf2str(pdffile, coords.tb.final_score_right))
+        final_score_left_str   = pdf2str(pdffile, coords.tb.final_score_left)
+        final_score_middle_str = pdf2str(pdffile, coords.tb.final_score_middle)
+        final_score_right_str  = pdf2str(pdffile, coords.tb.final_score_right)
 
-        # print(final_score_left)
-        # print(final_score_middle)
-        # print(final_score_right)
-        # check if SVP is on the outside
-        if re.match('.*Preu[ss|ß]en Berlin.*', tb_name_left):
-            print('SVP is on the left')
+        # print(final_score_left_str)
+        # print(final_score_middle_str)
+        # print(final_score_right_str)
+
+        final_score_left=int(final_score_left_str)
+        final_score_middle=int(final_score_middle_str)
+        final_score_right=int(final_score_right_str)
+
+
+        # check if tracked team is on the outside
+        if re.search(team_name_regex, tb_name_left):
+            # print('tracked team is on the left of tiebreak')
             # read starting player info
             for ipos in range(6):
                 current_player=int(pdf2str(pdffile, coords.tb.starting_left[ipos]))
@@ -330,10 +339,11 @@ def extract_game_info(pdffile):
                 current_set.final_score=[final_score_right,final_score_middle]
             else:
                 current_set.final_score=[final_score_left,final_score_middle]
-        # SVP is in the middle
-        else:
+        # team is in the middle
+        # else:
+        elif re.search(team_name_regex, tb_name_middle):
             print('UNTESTED CODE!!')
-            print('SVP is in the middle')
+            print('tracked team is in the middle of tiebreak')
             # read starting player info
             for ipos in range(6):
                 current_player=int(pdf2str(pdffile, coords.tb.starting_middle[ipos]))
@@ -365,6 +375,8 @@ def extract_game_info(pdffile):
                     sw2_score = list(map(int, re.findall(r'\d+', sw2_score_str)))
                     current_subst=VBsubstitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
                     current_set.substitutions.append(current_subst)
+        else:
+            raise Exception('Could not find {team_name_regex} in header for tiebreak: {tb_name_left},{tb_name_middle}')
 
             if tb_sides_switched:
                 current_set.final_score=[final_score_middle,final_score_right]

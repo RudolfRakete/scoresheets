@@ -1,6 +1,12 @@
 import os
 from dataclasses import dataclass, field
 
+# @dataclass
+# class team_info:
+    # scoresheet_path:str='.'
+    # team_name:str=''
+    # team_name_regex:str=''
+
 @dataclass
 class coord:
     x:float=None
@@ -86,6 +92,8 @@ class VBmatch:
 
     def num2player(self, num):
         player = [x for x in self.players if x.number==num]
+        if not player:
+            raise Exception(f"Player with number {num} not in player list:\n {self.players}")
         return player[0]
 
 

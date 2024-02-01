@@ -35,24 +35,24 @@ for i in range(5):
 
 # final results coordinates
 # set 1
-VBset[0].final_scoreA=pdf_box(251,97,25,45)
-VBset[0].final_scoreB=pdf_box(407,97,25,45)
+VBset[0].final_scoreA=pdf_box(251,97 ,25,40)
+VBset[0].final_scoreB=pdf_box(407,97 ,25,40)
 # set 2
-VBset[1].final_scoreA=pdf_box(738,97,25,45)
-VBset[1].final_scoreB=pdf_box(582,97,25,45)
+VBset[1].final_scoreA=pdf_box(738,97 ,25,40)
+VBset[1].final_scoreB=pdf_box(582,97 ,25,40)
 # set 3
-VBset[2].final_scoreA=pdf_box(251,211,25,45)
-VBset[2].final_scoreB=pdf_box(407,211,25,45)
+VBset[2].final_scoreA=pdf_box(251,211,25,40)
+VBset[2].final_scoreB=pdf_box(407,211,25,40)
 # set 4
-VBset[3].final_scoreA=pdf_box(738,211,25,45)
-VBset[3].final_scoreB=pdf_box(582,211,25,45)
+VBset[3].final_scoreA=pdf_box(738,211,25,40)
+VBset[3].final_scoreB=pdf_box(582,211,25,40)
 # set 4
 tb.name_left          = pdf_box(165.8, 297, 84, 15)
 tb.name_middle        = pdf_box(321.7, 297, 84, 15)
 tb.name_right         = pdf_box(477.8, 297, 84, 15)
-tb.final_score_left   = pdf_box(251.2, 325, 25, 44)
-tb.final_score_middle = pdf_box(407.1, 325, 25, 44)
-tb.final_score_right  = pdf_box(563.2, 325, 25, 44)
+tb.final_score_left   = pdf_box(251.2, 325, 25, 40)
+tb.final_score_middle = pdf_box(407.1, 325, 25, 40)
+tb.final_score_right  = pdf_box(563.2, 325, 25, 40)
 
 
 # starting position coordinates
