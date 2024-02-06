@@ -109,7 +109,8 @@ def pdf2str(pdffile,pdf_box):
 @dataclass
 class player_statistics:
     # includes player name and the following lists
-    # * number of the matches played
+    # * player number (or code) for each match
+    # * id of the match played
     # * points played in each match
     # * number of sets the player was in the starting rotation for each match played
     # * number of the points present for each match
@@ -128,7 +129,7 @@ class player_statistics:
         if other.numbers:
             self.numbers += other.numbers
             # get unique numbers
-            self.numbers = list(set(self.numbers))
+            # self.numbers = list(set(self.numbers))
         
         for i in range(len(other.matches)):
             match_id=other.matches[i]
