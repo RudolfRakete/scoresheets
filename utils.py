@@ -1,4 +1,6 @@
 import os
+import re
+import datetime
 from dataclasses import dataclass, field
 
 # @dataclass
@@ -25,10 +27,12 @@ class set_coords:
     # switchA:       list[pdf_box] = field(default=list)
     # switch_scoreA: list[pdf_box] = field(default=list)
     final_scoreA:  pdf_box = None
+    rotationA: pdf_box = None
     startingB:     list[pdf_box] = field(default=list)
     # switchB:       list[pdf_box] = field(default=list)
     # switch_scoreB: list[pdf_box] = field(default=list)
     final_scoreB:  pdf_box = None
+    rotationB: pdf_box = None
 
 @dataclass
 class tiebreak_coords:
@@ -66,12 +70,15 @@ class VBset:
     starting:list[int]=field(default=list)
     players:list[int]=field(default=list)
     substitutions:list[VBsubstitution]=field(default=list)
+    rotation:list[int]=field(default_factory=lambda: [])
+    opp_rotation:list[int]=field(default_factory=lambda: [])
 
     def __str__(self):
         strout = f"Set {self.num}.\n"
         strout+=f"Final score {self.final_score}\n"
         strout+=f"Starting players: {self.starting}\n"
         strout+=f"Participating players: {self.players}\n"
+        strout+=f"Rotation information: {self.rotation}\n                      {self.opp_rotation}\n"
         strout+=f"Substitutions:\n"
         for i in range(len(self.substitutions)):
             strout+=f"{self.substitutions[i]}\n"
@@ -81,6 +88,7 @@ class VBset:
 class VBmatch:
     opponent:str=''
     id:int=None
+    date:datetime.date=None
     # n_players:int=None
     players:list[player]=field(default_factory=lambda: [])
     liberos:list[player]=field(default_factory=lambda: [])
@@ -88,7 +96,7 @@ class VBmatch:
     # player_numbers:list[int]=field(default=list)
     # player_names:list[str]=field(default=list)
     # points_played:list[int]=field(default=list)
-    setlist:list[set]=field(default_factory=lambda: [])
+    setlist:list[VBset]=field(default_factory=lambda: [])
 
     def num2player(self, num):
         player = [x for x in self.players if x.number==num]
@@ -111,17 +119,36 @@ class player_statistics:
     # includes player name and the following lists
     # * player number (or code) for each match
     # * id of the match played
+    # * points won in each match (not yet used)
+    # * points lost in each match (not yet used)
     # * points played in each match
-    # * number of sets the player was in the starting rotation for each match played
     # * number of the points present for each match
+    # * number of sets the player was in the starting rotation for each match played
+    # * number of sets won and lost where the player participated
     name:str=''
     numbers:list[int]=field(default_factory=lambda: []) # list to account for change of player number between matches
+    # match info
+    dates:list[datetime.date]=field(default_factory=lambda: [])
     matches:list[str]=field(default_factory=lambda: [])
-    points_played:list[int]=field(default_factory=lambda: [])
-    starting_sets:list[int]=field(default_factory=lambda: [])
+    matches_won:list[str]=field(default_factory=lambda: [])
+    matches_lost:list[str]=field(default_factory=lambda: [])
+    # points info
+    points_won:list[int]=field(default_factory=lambda: [])
+    points_lost:list[int]=field(default_factory=lambda: [])
+    points_played:list[int]=field(default_factory=lambda: []) # deprecate soon
     points_present:list[int]=field(default_factory=lambda: [])
+    # set info
+    starting_sets:list[int]=field(default_factory=lambda: [])
+    sets_won:list[int]=field(default_factory=lambda: [])
+    sets_lost:list[int]=field(default_factory=lambda: [])
 
     def __add__(self, other):
+        if not other.name:
+            raise Exception(f"Can not add player statistics without name.")
+
+        if not other.matches:
+            raise Exception(f"Can not add player statistics without match id.")
+
         if (self.name!=other.name):
             raise Exception(f"Trying to add stats of {other.name} to stats of {self.name}")
         # print(f"Adding \n{other}\nto \n{self}")
@@ -132,24 +159,51 @@ class player_statistics:
             # self.numbers = list(set(self.numbers))
         
         for i in range(len(other.matches)):
+            # check if match is already present in self.matches
             match_id=other.matches[i]
             # if (self.matches) and (match_id in self.matches):
             if (match_id in self.matches):
                 ind_match=self.matches.index(match_id)
                 # check if items in list exist (may not exist when lazily adding player_statistics with only partially set stats)
+                if len(other.dates)>=i+1:
+                    self.dates[ind_match] += other.dates[i]
                 if len(other.points_played)>=i+1:
                     self.points_played[ind_match] += other.points_played[i]
+                if len(other.points_won)>=i+1:
+                    self.points_won[ind_match] += other.points_won[i]
+                if len(other.points_lost)>=i+1:
+                    self.points_lost[ind_match] += other.points_lost[i]
                 if len(other.points_present)>=i+1:
                     self.points_present[ind_match] += other.points_present[i]
                 if len(other.starting_sets)>=i+1:
                     self.starting_sets[ind_match] += other.starting_sets[i]
+                if len(other.sets_won)>=i+1:
+                    self.sets_won[ind_match] += other.sets_won[i]
+                if len(other.sets_lost)>=i+1:
+                    self.sets_lost[ind_match] += other.sets_lost[i]
+                if len(other.matches_won)>=i+1:
+                    self.matches_won[ind_match] += other.matches_won[i]
+                if len(other.matches_lost)>=i+1:
+                    self.matches_lost[ind_match] += other.matches_lost[i]
             else:
                 self.matches.append(other.matches[i])
                 # check if items in list exist (may not exist when lazily adding player_statistics with only partially set stats)
+                if len(other.dates)>=i+1:
+                    self.dates.append(other.dates[i])
+                else: 
+                    self.dates.append(0)
                 if len(other.points_played)>=i+1:
                     self.points_played.append(other.points_played[i])
                 else: 
                     self.points_played.append(0)
+                if len(other.points_won)>=i+1:
+                    self.points_won.append(other.points_won[i])
+                else: 
+                    self.points_won.append(0)
+                if len(other.points_lost)>=i+1:
+                    self.points_lost.append(other.points_lost[i])
+                else: 
+                    self.points_lost.append(0)
                 if len(other.points_present)>=i+1:
                     self.points_present.append(other.points_present[i])
                 else:
@@ -158,6 +212,22 @@ class player_statistics:
                     self.starting_sets.append(other.starting_sets[i])
                 else:
                     self.starting_sets.append(0)
+                if len(other.sets_won)>=i+1:
+                    self.sets_won.append(other.sets_won[i])
+                else:
+                    self.sets_won.append(0)
+                if len(other.sets_lost)>=i+1:
+                    self.sets_lost.append(other.sets_lost[i])
+                else:
+                    self.sets_lost.append(0)
+                if len(other.matches_won)>=i+1:
+                    self.matches_won.append(other.matches_won[i])
+                else:
+                    self.matches_won.append(0)
+                if len(other.matches_lost)>=i+1:
+                    self.matches_lost.append(other.matches_lost[i])
+                else:
+                    self.matches_lost.append(0)
 
         return self
 
@@ -175,9 +245,20 @@ class statistics:
     # * list of player statistics
     # * total number of points played across all matches
     # * total number of sets played across all matches
+    first_date:datetime.date=datetime.date(day=1,month=1,year=datetime.MAXYEAR)
+    last_date:datetime.date=datetime.date(day=1,month=1,year=datetime.MINYEAR)
+    matches:list[int]=field(default_factory=lambda: [])
     player:list[player_statistics]=field(default_factory=lambda: [])
-    total_points:int=0
-    total_sets:int=0
+    # points_won:int=0
+    # points_lost:int=0
+    total_points_won:int=0 # not yet used
+    total_points_lost:int=0 # not yet used
+    total_points:int=0 # deprecate soon
+    # sets_won:int=0
+    # sets_lost:int=0
+    total_sets_won:int=0
+    total_sets_lost:int=0
+    total_sets:int=0 # deprecate soon
 
     def get_player_stat(self, name):
         # returns or creates a new player_statistics class and appends to list
@@ -196,8 +277,17 @@ class statistics:
         player+=player_stat
 
     def __add__(self, other):
+        if self.first_date>other.first_date:
+            self.first_date=other.first_date
+        if self.last_date<other.last_date:
+            self.last_date=other.last_date
         # print(f"Adding\n{other}\nto\n{self}")
+        self.matches+=other.matches
+        self.total_points_won+=other.total_points_won
+        self.total_points_lost+=other.total_points_lost
         self.total_points+=other.total_points
+        self.total_sets_won+=other.total_sets_won
+        self.total_sets_lost+=other.total_sets_lost
         self.total_sets+=other.total_sets
         
         # add player statistics
@@ -209,3 +299,11 @@ class statistics:
         return self
             
 
+
+def rot_raw2list(raw):
+    rot = re.findall(r'╳|\d+', raw)
+    # filter out ╳ and replace with -1 for now
+    rot = [int(x) if x.isnumeric() else -1 for x in rot]
+    # rot = [int(x.replace('╳','0')) for x in rot]
+    rot.sort()
+    return rot

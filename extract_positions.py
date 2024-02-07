@@ -2,6 +2,8 @@ import os
 import re
 import copy
 import global_positions as coords
+import numpy as np
+import datetime
 from utils import *
 
 
@@ -17,7 +19,7 @@ def extract_game_info(pdffile, team_name_regex):
     # get match id
     title=pdf2str(pdffile, coords.title)
     # get team names and determine if tracked team is A or B
-    reg=re.search('([AB]) (.*) vs\. (.*) ([AB])', title)
+    reg=re.search(r'([AB]) (.*) vs\. (.*) ([AB])', title)
     if not reg:
         raise Exception(f"Could not determine teams and letters (A/B) from title: {title}")
 
@@ -35,13 +37,24 @@ def extract_game_info(pdffile, team_name_regex):
     else:
         raise Exception(f"Could not find \'{team_name_regex}\' in title: {title}")
 
-    reg_id=re.search('Spiel (\d+)', title)
+    reg_id=re.search(r'Spiel (\d+)', title)
     if reg_id:
         current_match.id=int(reg_id.group(1))
     else:
         raise Exception(f"Could not extract match id from title: {title}")
 
     print(f"Reading scoresheet for match {current_match.id} against {current_match.opponent}")
+
+    reg_date=re.search(r'(\d{2}).(\d{2}).(\d{4})', title)
+    if reg_date:
+        day=int(reg_date.group(1))
+        month=int(reg_date.group(2))
+        year=int(reg_date.group(3))
+        current_match.date=datetime.date(day=day, month=month, year=year)
+        # current_match.date=reg_date.group(1)
+    else:
+        raise Exception(f"Could not extract date from title: {title}")
+    # print(current_match.date)
 
     teamlist_left=pdf2str(pdffile, coords.teamlist_left).split('\n')
     teamlist_right=pdf2str(pdffile, coords.teamlist_right).split('\n')
@@ -68,7 +81,7 @@ def extract_game_info(pdffile, team_name_regex):
                 is_libero=1
             elif reg_header.group(1)=='Offizielle':
                 is_libero=0
-        reg_player=re.search('(\d+) (.*)', line)
+        reg_player=re.search(r'(\d+) (.*)', line)
         if reg_player:
             # found player
             # print('found player')
@@ -225,6 +238,15 @@ def extract_game_info(pdffile, team_name_regex):
                 current_subst=VBsubstitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
                 current_set.substitutions.append(current_subst)
 
+        # read rotation information
+        rot_strA=pdf2str(pdffile, coords.VBset[iset].rotationA)
+        rot_strB=pdf2str(pdffile, coords.VBset[iset].rotationB)
+        if AorB=='A':
+            current_set.rotation=rot_raw2list(rot_strA)
+            current_set.opp_rotation=rot_raw2list(rot_strB)
+        elif AorB=='B':
+            current_set.rotation=rot_raw2list(rot_strB)
+            current_set.opp_rotation=rot_raw2list(rot_strA)
 
         # print(current_set)
 
@@ -270,6 +292,20 @@ def extract_game_info(pdffile, team_name_regex):
         final_score_middle=int(final_score_middle_str)
         final_score_right=int(final_score_right_str)
 
+        rot_str_left   = pdf2str(pdffile, coords.tb.rotation_left)
+        rot_str_middle = pdf2str(pdffile, coords.tb.rotation_middle)
+        rot_str_right  = pdf2str(pdffile, coords.tb.rotation_right)
+
+        rot_left_only = rot_raw2list(rot_str_left)
+        rot_middle = rot_raw2list(rot_str_middle)
+        rot_right = rot_raw2list(rot_str_right)
+
+        # combine left and right rotation lists and remove duplicates
+        rot_left = list(set(rot_left_only+rot_right))
+        rot_left.sort()
+
+        # print(rot_left)
+        # print(rot_middle)
 
         # check if tracked team is on the outside
         if re.search(team_name_regex, tb_name_left):
@@ -333,6 +369,8 @@ def extract_game_info(pdffile, team_name_regex):
                     current_set.substitutions.append(current_subst)
 
 
+            current_set.rotation=rot_left
+            current_set.opp_rotation=rot_middle
             
             # read final score info
             if tb_sides_switched:
@@ -376,15 +414,17 @@ def extract_game_info(pdffile, team_name_regex):
                     current_subst=VBsubstitution(playerin=current_player,playerout=sw_player,score=sw2_score, backsubstitution=1)
                     current_set.substitutions.append(current_subst)
 
-                if tb_sides_switched:
-                    current_set.final_score=[final_score_middle,final_score_right]
-                else:
-                    current_set.final_score=[final_score_middle,final_score_left]
+
+            current_set.rotation=rot_middle
+            current_set.opp_rotation=rot_left
+
+            if tb_sides_switched:
+                current_set.final_score=[final_score_middle,final_score_right]
+            else:
+                current_set.final_score=[final_score_middle,final_score_left]
         else:
             raise Exception('Could not find {team_name_regex} in header for tiebreak: {tb_name_left},{tb_name_middle}')
 
-
-        # print(current_set)
 
         current_match.setlist.append(current_set)
 

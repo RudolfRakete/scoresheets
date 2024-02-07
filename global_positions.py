@@ -143,3 +143,21 @@ tb.starting_right[5]=pdf_box(541.5, 325, pos_width, pos_height)
 linewidth = 0.75
 pos_width  = (20.25+21)/2
 pos_height = 10.5
+
+# rotation information
+# set 1
+VBset[0].rotationA = pdf_box(122, 141, 126, 34)
+VBset[0].rotationB = pdf_box(278, 141, 126, 34)
+# set 2
+VBset[1].rotationB = pdf_box(452, 141, 126, 34)
+VBset[1].rotationA = pdf_box(608, 141, 126, 34)
+# set 3
+VBset[2].rotationA = pdf_box(122, 255, 126, 34)
+VBset[2].rotationB = pdf_box(278, 255, 126, 34)
+# set 4
+VBset[3].rotationB = pdf_box(452, 255, 126, 34)
+VBset[3].rotationA = pdf_box(608, 255, 126, 34)
+# set 5
+tb.rotation_left   = pdf_box(122, 369, 126, 34)
+tb.rotation_middle = pdf_box(278, 369, 126, 34)
+tb.rotation_right  = pdf_box(434, 369, 126, 34)
