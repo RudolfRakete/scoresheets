@@ -56,6 +56,9 @@ def extract_game_info(pdffile, team_name_regex):
         raise Exception(f"Could not extract date from title: {title}")
     # print(current_match.date)
 
+################################################################################
+# read team list                                                               #
+################################################################################
     teamlist_left=pdf2str(pdffile, coords.teamlist_left).split('\n')
     teamlist_right=pdf2str(pdffile, coords.teamlist_right).split('\n')
     team_header_left=teamlist_left[0]
@@ -68,8 +71,8 @@ def extract_game_info(pdffile, team_name_regex):
     else:
         raise Exception(f"Could not find \'{team_name_regex}\' in teamlist header")
 
-    # print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
     is_libero=0
+    player_name_list=[]
     for line in teamlist:
         # print('line:',line)
         reg_header=re.search('[AB] (.*)', line)
@@ -79,7 +82,8 @@ def extract_game_info(pdffile, team_name_regex):
             # print(reg_header.group(1))
             if reg_header.group(1)=='Libero':
                 is_libero=1
-            elif reg_header.group(1)=='Offizielle':
+            # elif reg_header.group(1)=='Offizielle':
+            else:
                 is_libero=0
         reg_player=re.search(r'(\d+) (.*)', line)
         if reg_player:
@@ -87,6 +91,7 @@ def extract_game_info(pdffile, team_name_regex):
             # print('found player')
             number = reg_player.group(1)
             name = reg_player.group(2)
+            player_name_list.append(name)
             # print(name)
             # print(number)
             # remove special marks from player names (neede twice if both are present)
@@ -107,9 +112,12 @@ def extract_game_info(pdffile, team_name_regex):
             # print(reg_official.group(2))
             official_type=reg_official.group(1)
             name=reg_official.group(2)
-            # print(name)
-            # print(official_type)
-            current_match.players.append(player(name=name, number=official_type))
+            # check if official is also player (if yes update number, if not append new player)
+            if name in player_name_list:
+                p=current_match.name2player(name)
+                p.number=f"{p.number}+{official_type}"
+            else:
+                current_match.players.append(player(name=name, number=official_type))
 
 
 

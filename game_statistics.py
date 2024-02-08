@@ -6,10 +6,11 @@ def match2stat(match):
 
     # initialize player statistics for the match
     for p in match.players:
-        player=player_statistics(name=p.name, numbers=[p.number], dates=[match.date])
+        player=player_statistics(name=p.name, matches=[match.id], numbers=[p.number], dates=[match.date])
         match_stat.first_date=match.date
         match_stat.last_date=match.date
-        match_stat.player.append(player)
+        # match_stat.player.append(player)
+        match_stat.add_player_stat(player)
 
 
     points_in_match=0

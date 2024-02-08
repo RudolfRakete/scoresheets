@@ -104,6 +104,13 @@ class VBmatch:
             raise Exception(f"Player with number {num} not in player list:\n {self.players}")
         return player[0]
 
+    def name2player(self, name):
+        player = [x for x in self.players if x.name==name]
+        if not player:
+            raise Exception(f"Player with name {name} not in player list:\n {self.players}")
+        return player[0]
+
+
 
 
 
@@ -147,7 +154,7 @@ class player_statistics:
             raise Exception(f"Can not add player statistics without name.")
 
         if not other.matches:
-            raise Exception(f"Can not add player statistics without match id.")
+            raise Exception(f"Can not add player statistics without match id.\nself:\n{self}\nother:\n{other}")
 
         if (self.name!=other.name):
             raise Exception(f"Trying to add stats of {other.name} to stats of {self.name}")
@@ -271,6 +278,7 @@ class statistics:
         return self.player[-1]
 
     def add_player_stat(self, player_stat):
+        # ALWAYS USE THIS FUNCTION WHEN ADDING PLAYER STATISTICS. THE __add__ FUNCTION OF player_statistics ENSURES CORRECT ADDITION WITH INCOMPLETE player_statistics.
         # adds player_statistics to list
         # creates new entry if player name is not found
         player=self.get_player_stat(player_stat.name)
