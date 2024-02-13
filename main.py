@@ -9,6 +9,7 @@ team_name='SVP'
 team_name_regex='Preußen Berlin'
 scoresheets=glob.glob('/'.join([path,'*.pdf']))
 # scoresheets=glob.glob('/'.join([path,'2025.pdf']))
+# scoresheets=glob.glob('/'.join([path,'202*.pdf']))
 
 # path='./scoresheets/BVV/'
 # team_name='BVV'

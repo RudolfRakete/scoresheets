@@ -42,33 +42,48 @@ for player in stat.player:
         smallest_num.append(min([x for x in player.numbers if isinstance(x,int)]))
     else:
         smallest_num.append(9999)
-
 ind = np.argsort(smallest_num)
-
 stat.player=[stat.player[i] for i in ind]
 
+################################################################################
+# loop through players and gather statistics                                   #
+################################################################################
 names=[]
 nums=[]
 ylabel=[]
+#
+points_involved=[]
+points_present=[]
 points_won=[]
 points_lost=[]
-points_played=[]
-points_present=[]
+#
 sets=[]
-starting_sets=[]
+sets_started=[]
+sets_present=[]
+sets_involved=[]
 sets_won=[]
 sets_lost=[]
+#
+matches_present=[]
+matches_started=[]
+matches_involved=[]
 for player in stat.player:
     # print(player)
-    # nums = ','.join([f"{x}" for x in player.numbers])
-    # points_played_per_num=[]
+    points_involved.append([])
+    points_present.append([])
     points_won.append([])
     points_lost.append([])
-    points_played.append([])
-    points_present.append([])
-    starting_sets.append([])
+    #
+    sets_started.append([])
+    sets_present.append([])
+    sets_involved.append([])
     sets_won.append([])
     sets_lost.append([])
+    #
+    matches_started.append([])
+    matches_present.append([])
+    matches_involved.append([])
+
 
     unique_nums=list(set(player.numbers))
     # ylabel=f"{player.name} ("+','.join([f"{x}" for x in unique_nums])+")"
@@ -76,31 +91,49 @@ for player in stat.player:
     nums.append(unique_nums)
     # print(ylabel)
     for number in unique_nums:
-        # print(number)
-        # print([x for x in player.points_played])
+        # statistics on points
+        points_present[-1].append(sum([player.points_present[i] for i in range(len(player.points_present)) if player.numbers[i]==number]))
+        points_involved[-1].append(sum([player.points_involved[i] for i in range(len(player.points_involved)) if player.numbers[i]==number]))
         points_won[-1].append(sum([player.points_won[i] for i in range(len(player.points_won)) if player.numbers[i]==number]))
         points_lost[-1].append(sum([player.points_lost[i] for i in range(len(player.points_lost)) if player.numbers[i]==number]))
-        points_played[-1].append(sum([player.points_played[i] for i in range(len(player.points_played)) if player.numbers[i]==number]))
-        points_present[-1].append(sum([player.points_present[i] for i in range(len(player.points_present)) if player.numbers[i]==number]))
-        starting_sets[-1].append(sum([player.starting_sets[i] for i in range(len(player.starting_sets)) if player.numbers[i]==number]))
+        # statistics on sets
+        sets_present[-1].append(sum([player.sets_present[i] for i in range(len(player.sets_present)) if player.numbers[i]==number]))
+        sets_involved[-1].append(sum([player.sets_involved[i] for i in range(len(player.sets_involved)) if player.numbers[i]==number]))
+        sets_started[-1].append(sum([player.sets_started[i] for i in range(len(player.sets_started)) if player.numbers[i]==number]))
         sets_won[-1].append(sum([player.sets_won[i] for i in range(len(player.sets_won)) if player.numbers[i]==number]))
         sets_lost[-1].append(sum([player.sets_lost[i] for i in range(len(player.sets_lost)) if player.numbers[i]==number]))
+        # statistics on matches
+        matches_present[-1].append(len([player.matches_present[i] for i in range(len(player.matches_present)) if player.numbers[i]==number]))
+        matches_involved[-1].append(sum([player.matches_involved[i] for i in range(len(player.matches_involved)) if player.numbers[i]==number]))
+        matches_started[-1].append(sum([player.matches_started[i] for i in range(len(player.matches_started)) if player.numbers[i]==number]))
 
     # sort numbers according to largest contribution of points_present
     ind = np.argsort(points_present[-1])[::-1]
-    points_won[-1]     = [points_won[-1][i] for i in ind]
-    points_lost[-1]    = [points_lost[-1][i] for i in ind]
-    points_played[-1]  = [points_played[-1][i] for i in ind]
-    points_present[-1] = [points_present[-1][i] for i in ind]
-    starting_sets[-1]  = [starting_sets[-1][i] for i in ind]
-    sets_won[-1]       = [sets_won[-1][i] for i in ind]
-    sets_lost[-1]      = [sets_lost[-1][i] for i in ind]
-    nums[-1]           = [nums[-1][i] for i in ind]
+    nums[-1]             = [nums[-1][i] for i in ind]
+    #
+    points_involved[-1]    = [points_involved[-1][i] for i in ind]
+    points_present[-1]   = [points_present[-1][i] for i in ind]
+    points_won[-1]       = [points_won[-1][i] for i in ind]
+    points_lost[-1]      = [points_lost[-1][i] for i in ind]
+    #
+    sets_started[-1]     = [sets_started[-1][i] for i in ind]
+    sets_present[-1]     = [sets_present[-1][i] for i in ind]
+    sets_involved[-1]    = [sets_involved[-1][i] for i in ind]
+    sets_won[-1]         = [sets_won[-1][i] for i in ind]
+    sets_lost[-1]        = [sets_lost[-1][i] for i in ind]
+    # 
+    matches_started[-1]  = [matches_started[-1][i] for i in ind]
+    matches_present[-1]  = [matches_present[-1][i] for i in ind]
+    matches_involved[-1] = [matches_involved[-1][i] for i in ind]
     ylabel.append(player.name+" ("+",".join([f"{x}" for x in nums[-1]])+")")
 
-plot_data=[points_present, points_played, points_won, starting_sets]
+print(matches_present)
+# print(ylabel)
+# print(matches_started)
+
+plot_data=[points_present, points_involved, points_won, sets_started]
 plot_norm=[stat.total_points, stat.total_points, stat.total_points, stat.total_sets]
-# plot_label=['points played', 'points won', 'points present', 'starting sets', 'sets won']
+# plot_label=['points involved', 'points won', 'points present', 'starting sets', 'sets won']
 plot_label=['Punkte anwesend', 'Punkte gespielt', 'Punkte gewonnen', 'Startaufstellung']
 n_data=len(plot_data)
 
@@ -108,67 +141,116 @@ n_data=len(plot_data)
 ################################################################################
 # print and export table with player statistics                                #
 ################################################################################
-fid = open(f'files/table_{team_name}_raw.tex', 'w')
+fname_tex=f'files/table_{team_name}.tex'
 n_matches=len(stat.matches)
-title=f'Statistics for {n_matches} matches from {stat.first_date} to {stat.last_date}.'
-header='{name:20s} | {numbers:8s} | {p_present:6s} ({p_present_ratio:3s}) | {p_played:6s} ({p_played_ratio1:4s},{p_played_ratio2:4s}) | {p_won:4s} | {p_lost:4s} | {p_ratio_str:s}'.format(
-    # name='Name',
-    # numbers='Numbers',
-    # p_present='present',
-    # p_present_ratio='%',
-    # p_played='played',
-    # p_played_ratio1='own',
-    # p_played_ratio2='tot',
-    # p_won='won',
-    # p_lost='lost',
-    # p_ratio_str='ratio'
-    name='Name',
-    numbers='Nummern',
-    p_present='anwesend',
-    p_present_ratio='%',
-    p_played='gespielt',
-    p_played_ratio1='anw',
-    p_played_ratio2='tot',
-    p_won='gew',
-    p_lost='verl',
-    p_ratio_str='Quote'
+# title='Statistics for {n_matches} matches from {first} to {last}.'.format(n_matches=n_matches, first=stat.first_date.strftime('%d.%m.%Y'), last=stat.last_date.strftime('%d.%m.%Y'))
+title='Statistik für {n_matches} Spiele des {team_name} vom {first} bis {last}.'.format(n_matches=n_matches, team_name=team_name, first=stat.first_date.strftime('%d.%m.%Y'), last=stat.last_date.strftime('%d.%m.%Y'))
+# points | starting sets | involved sets | matches
+# percent of total and present for each
+header1 =' '*20+'{points:20s} | {sets_started:20s} | {sets:20s} | {matches:20s}'.format(
+    points='Punkte',
+    sets_started='Sätze in Startaufstellung',
+    sets='Sätze mit Beteiligung',
+    matches='Spiele'
     )
-tex_header=header.replace('|','&')
-tex_header=tex_header.replace('(','& (')
-tex_header=tex_header.replace('%','\\%')
-fid.write(tex_header+'\\\\\n')
+header2='{name:20s} | {numbers:8s} | {presence_ratio:8s} | {p_involved:4s} | {p_involved_ratio1:8s} | {p_involved_ratio2:8s} | {s_involved:2s} | {s_involved_ratio1:8s} | {s_involved_ratio2:8s} | {s_started:2s} | {s_started_ratio1:8s} | {s_started_ratio2:8s} | {m_involved:2s} | {m_involved_ratio1:8s} | {m_involved_ratio2:8s} | {m_started:2s} | {m_started_ratio1:8s} | {m_started_ratio2:8s}'.format(
+        name='Name',
+        numbers='Nummern',
+        presence_ratio='anw.',
+        p_involved='gespielt',
+        p_involved_ratio1='% ges.',
+        p_involved_ratio2='% anw. (Spieler)',
+        s_started='gestartet',
+        s_started_ratio1='% ges.',
+        s_started_ratio2='% anw. (Spieler)',
+        s_involved='anw.',
+        s_involved_ratio1='% ges.',
+        s_involved_ratio2='% anw. (Spieler)',
+        m_involved='beteiligt',
+        m_involved_ratio1='% ges.',
+        m_involved_ratio2='% anw. (Spieler)',
+        m_started='gestartet',
+        m_started_ratio1='% ges.',
+        m_started_ratio2='% anw. (Spieler)',
+        )
+tex_header1='&& \\multicolumn{4}{|c|}{Punkte} & \\multicolumn{6}{|c|}{Sätze} & \\multicolumn{3}{|c|}{Spiele}\\\\\n'
+tex_header2=header2.replace('|','&')
+tex_header2=tex_header2.replace('%','\\%')
 print(title)
-print(header)
+print(header1)
+print(header2)
 # print(tex_header)
 
+tex_table=''
 for iplayer in range(len(stat.player)):
+    p_present=sum(points_present[iplayer])
+    p_present_as_player=sum([points_present[iplayer][i] for i in range(len(points_present[iplayer])) if type(nums[iplayer][i])==int])
+    p_involved=sum(points_involved[iplayer])
     p_won=sum(points_won[iplayer])
     p_lost=sum(points_lost[iplayer])
-    p_played=sum(points_played[iplayer])
-    p_present=sum(points_present[iplayer])
-    p_ratio_str="{p_ratio:.2f}".format(p_ratio=p_won/p_lost) if p_lost>0 else ''
-    if p_won+p_lost!=p_played: raise Exception(f'Failed consistency check for {stat.player[iplayer].name}: {p_won}+{p_lost}!={p_played}')
-    line='{name:20s} | {numbers:8s} | {p_present:6d} ({p_present_ratio:3.0f}%) | {p_played:6d} ({p_played_ratio1:3.0f}%,{p_played_ratio2:3.0f}%) | {p_won:4d} | {p_lost:4d} | {p_ratio_str:s}'.format(
+    # 
+    s_present=sum(sets_present[iplayer])
+    s_present_as_player=sum([sets_present[iplayer][i] for i in range(len(sets_present[iplayer])) if type(nums[iplayer][i])==int])
+    s_involved=sum(sets_involved[iplayer])
+    s_started=sum(sets_started[iplayer])
+    # 
+    # print(matches_present[iplayer])
+    m_present=sum(matches_present[iplayer])
+    m_present_as_player=sum([matches_present[iplayer][i] for i in range(len(matches_present[iplayer])) if type(nums[iplayer][i])==int])
+    m_involved=sum(matches_involved[iplayer])
+    m_started=sum(matches_started[iplayer])
+    #
+    # safely convert ratios to strings avoiding div by 0
+    p_involved_ratio2_str = "{:3.0f}".format(p_involved/p_present_as_player*100) if p_present_as_player>0 else ''
+    s_involved_ratio2_str = "{:3.0f}".format(s_involved/s_present_as_player*100) if s_present_as_player>0 else ''
+    s_started_ratio2_str  = "{:3.0f}".format(s_started /s_present_as_player*100) if s_present_as_player>0 else ''
+    line='{name:20s} | {numbers:8s} | {presence_ratio:3.0f}% | {p_involved:4d} | {p_involved_ratio1:3.0f}% | {p_involved_ratio2:s}% | {s_involved:2d} | {s_involved_ratio1:3.0f}% | {s_involved_ratio2:s}% | {s_started:2d} | {s_started_ratio1:3.0f}% | {s_started_ratio2:s}% | {m_involved:2d} | {m_involved_ratio1:3.0f}% | {m_involved_ratio2:3.0f}% | {m_started:2d} | {m_started_ratio1:3.0f}% | {m_started_ratio2:3.0f}%'.format(
         name=stat.player[iplayer].name,
         numbers=','.join([f"{x}" for x in set(stat.player[iplayer].numbers)]),
-        p_present=p_present,
-        p_present_ratio=p_present/stat.total_points*100,
-        p_played=p_played,
-        p_played_ratio1=p_played/p_present*100,
-        p_played_ratio2=p_played/stat.total_points*100,
-        p_won=p_won,
-        p_lost=p_lost,
-        p_ratio_str=p_ratio_str
+        #
+        presence_ratio=p_present/stat.total_points*100,
+        p_involved=p_involved,
+        p_involved_ratio1=p_involved/stat.total_points*100,
+        p_involved_ratio2=p_involved_ratio2_str,
+        #
+        s_involved=s_involved,
+        s_involved_ratio1=s_involved/stat.total_sets*100,
+        s_involved_ratio2=s_involved_ratio2_str,
+        #
+        s_started=s_started,
+        s_started_ratio1=s_started/stat.total_sets*100,
+        s_started_ratio2=s_started_ratio2_str,
+        #
+        m_involved=m_involved,
+        m_involved_ratio1=m_involved/stat.total_matches*100,
+        m_involved_ratio2=m_involved/m_present*100,
+        #
+        m_started=m_started,
+        m_started_ratio1=m_started/stat.total_matches*100,
+        m_started_ratio2=m_started/m_present*100,
         )
     tex_line=line.replace('|','&')
-    tex_line=tex_line.replace('(','& (')
     tex_line=tex_line.replace('%','\\%')
     tex_line+='\\\\\n'
-    fid.write(tex_line)
+    tex_table+=tex_line
     print(line)
     # print(tex_line)
 
-fid.close()
+
+with open('files/tex_wrapper.tex', 'r') as f:
+    tex_wrapper = f.read()
+# print(tex_wrapper)
+tex_wrapper=tex_wrapper.replace('TITLE', title)
+tex_wrapper=tex_wrapper.replace('TABLE', tex_table)
+
+with open(fname_tex, 'w') as f:
+    f.write(tex_wrapper)
+
+try:
+    os.popen(f'pdflatex -output-directory=./files/ {fname_tex}')
+except:
+    print('Could not compile statistics table to pdf. Skipping.')
+    # ret=os.popen(ex_call).read()
 
 
 ################################################################################
@@ -181,21 +263,16 @@ Cmap=plt.get_cmap("Dark2")
 # print(color)
 dimming=2/3
 
-# color=np.array([[0,0,1.0], [0,1.0,0], [1.0,0,0]])
-# color=np.array([[114,147,203],
-                # [225,151, 76],
-                # [132,166, 91]], dtype=np.float64)
-
 fig1,ax1=plt.subplots()
-# yy=np.arange(len(points_played))
-yy=np.arange(len(points_played),0,-1)
+# yy=np.arange(len(points_involved))
+yy=np.arange(len(points_involved),0,-1)
 height=1/(n_data+1)
 ax1.grid()
 ax1.set_axisbelow(True)
 for iplayer in range(len(stat.player)):
-    points_played_left=0
+    points_involved_left=0
     points_present_left=0
-    starting_sets_left=0
+    sets_started_left=0
     left=[0]*n_data
     for inum in range(len(nums[iplayer])):
         offset=(n_data-1)/2
@@ -206,13 +283,6 @@ for iplayer in range(len(stat.player)):
             ax1.barh(yy[iplayer]+offset*height, plot_data[idata][iplayer][inum]/plot_norm[idata], height=height, left=left[idata], label=plot_label[idata], color=color)
             left[idata]+=plot_data[idata][iplayer][inum]/plot_norm[idata]
             offset-=1
-        # h1=ax1.barh(yy[iplayer]+height, points_played[iplayer][inum]/stat.total_points , height=height, left=points_played_left , label='points played' , color=color[0]/255)
-        # h2=ax1.barh(yy[iplayer]       , points_present[iplayer][inum]/stat.total_points, height=height, left=points_present_left, label='points present', color=color[1]/255)
-        # h3=ax1.barh(yy[iplayer]-height, starting_sets[iplayer][inum]/stat.total_sets   , height=height, left=starting_sets_left , label='starting sets' , color=color[2]/255)
-        # points_played_left+=points_played[iplayer][inum]/stat.total_points
-        # points_present_left+=points_present[iplayer][inum]/stat.total_points
-        # starting_sets_left+=starting_sets[iplayer][inum]/stat.total_sets
-        # color*=0.66
 
 ax1.set_yticks(yy, ylabel)
 ax1.set_xlim([0,1])
@@ -221,7 +291,8 @@ ax1.set_xticks(xticks, ["{x:.0f} %".format(x=100*x) for x in xticks])
 fig1.subplots_adjust(left=0.2)
 # fig1.legend([h1._label,h2._label,h3._label])
 fig1.legend(plot_label)
-plt.show()
+fig1.suptitle(title)
+# plt.show()
 fig1.savefig(f"figures/{team_name}_proportions.png")
 
 
@@ -233,10 +304,10 @@ if interactive:
     # px.bar(x=[0.0,1.0], y=[1.3, 2.4])
     # fig2.add_trace(go.Bar(x=[0.0,1.0], y=[1.3, 2.4]))
     for iplayer in range(len(stat.player)):
-        # print(yy[iplayer], points_played[iplayer])
-        points_played_left=0
+        # print(yy[iplayer], points_involved[iplayer])
+        points_involved_left=0
         points_present_left=0
-        starting_sets_left=0
+        sets_started_left=0
         # color=np.array([[0,0,1.0], [0,1.0,0], [1.0,0,0]])
         color=np.array([[114,147,203],
                         [225,151, 76],
@@ -251,17 +322,17 @@ if interactive:
             marker3=go.bar.Marker(color=col3)
             # hoverlabel1=go.bar.Hoverlabel(bgcolor='#ffffff')
             # hoverlabel1=go.bar.Hoverlabel()
-            hover1=f"{names[iplayer]} ({nums[iplayer][inum]}): {points_played[iplayer][inum]}/{stat.total_points}"
+            hover1=f"{names[iplayer]} ({nums[iplayer][inum]}): {points_involved[iplayer][inum]}/{stat.total_points}"
             hover2=f"{names[iplayer]} ({nums[iplayer][inum]}): {points_present[iplayer][inum]}/{stat.total_points}"
-            hover3=f"{names[iplayer]} ({nums[iplayer][inum]}): {starting_sets[iplayer][inum]}/{stat.total_sets}"
+            hover3=f"{names[iplayer]} ({nums[iplayer][inum]}): {sets_started[iplayer][inum]}/{stat.total_sets}"
             bar1=go.Bar(y=[yy[iplayer]+height],
-                 x=[points_played[iplayer][inum]/stat.total_points],
+                 x=[points_involved[iplayer][inum]/stat.total_points],
                  width=height,
-                 base=points_played_left,
+                 base=points_involved_left,
                  orientation='h',
                  marker=marker1,
-                 legendgroup='points played',
-                 name='points played',
+                 legendgroup='points involved',
+                 name='points involved',
                  hoverinfo="text",
                  hovertext=hover1
                         )
@@ -277,9 +348,9 @@ if interactive:
                  hovertext=hover2
                         )
             bar3=go.Bar(y=[yy[iplayer]-height],
-                 x=[starting_sets[iplayer][inum]/stat.total_sets],
+                 x=[sets_started[iplayer][inum]/stat.total_sets],
                  width=height,
-                 base=starting_sets_left,
+                 base=sets_started_left,
                  orientation='h',
                  marker=marker3,
                  legendgroup='starting sets',
@@ -295,12 +366,12 @@ if interactive:
             fig2.add_trace(bar2)
             fig2.add_trace(bar3)
 
-            points_played_left+=points_played[iplayer][inum]/stat.total_points
+            points_involved_left+=points_involved[iplayer][inum]/stat.total_points
             points_present_left+=points_present[iplayer][inum]/stat.total_points
-            starting_sets_left+=starting_sets[iplayer][inum]/stat.total_sets
+            sets_started_left+=sets_started[iplayer][inum]/stat.total_sets
             color*=0.66
-        # px.bar(y=[yy[iplayer]], x=points_played[iplayer], barmode='group')
-        # fig2.add_trace(go.Bar(y=[yy[iplayer]]*len(points_played[iplayer]), x=points_played[iplayer], offset=
+        # px.bar(y=[yy[iplayer]], x=points_involved[iplayer], barmode='group')
+        # fig2.add_trace(go.Bar(y=[yy[iplayer]]*len(points_involved[iplayer]), x=points_involved[iplayer], offset=
 
     fig2.update_layout(
             yaxis=dict(
