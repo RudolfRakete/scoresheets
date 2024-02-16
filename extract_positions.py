@@ -78,8 +78,6 @@ def extract_game_info(pdffile, team_name_regex):
         reg_header=re.search('[AB] (.*)', line)
         if reg_header:
             # found header
-            # print('found header')
-            # print(reg_header.group(1))
             if reg_header.group(1)=='Libero':
                 is_libero=1
             # elif reg_header.group(1)=='Offizielle':
@@ -88,12 +86,9 @@ def extract_game_info(pdffile, team_name_regex):
         reg_player=re.search(r'(\d+) (.*)', line)
         if reg_player:
             # found player
-            # print('found player')
             number = reg_player.group(1)
             name = reg_player.group(2)
             player_name_list.append(name)
-            # print(name)
-            # print(number)
             # remove special marks from player names (neede twice if both are present)
             name=re.sub('^[C|★] ', '', name)
             name=re.sub('^[C|★] ', '', name)
@@ -102,14 +97,9 @@ def extract_game_info(pdffile, team_name_regex):
             else:
                 lib_player = current_match.num2player(int(number))
                 lib_player.is_libero=1
-            # print(num)
-            # print(name)
         reg_official=re.search('(T|CT|SC|P) (.*)', line)
         if reg_official:
-            # print('found official')
             # found official
-            # print(reg_official.group(1))
-            # print(reg_official.group(2))
             official_type=reg_official.group(1)
             name=reg_official.group(2)
             # check if official is also player (if yes update number, if not append new player)
@@ -121,66 +111,9 @@ def extract_game_info(pdffile, team_name_regex):
 
 
 
-    # determine if playerlist is left or right
-    # name_left=pdf2str(pdffile, coords.team_left)
-    # name_right=pdf2str(pdffile, coords.team_right)
-
-    # if re.match(team_name_regex, name_left):
-        # # AorB=letter_left
-        # LorR='L'
-        # # current_match.opponent=name_right
-    # elif re.match(team_name_regex, name_right):
-        # # AorB=letter_right
-        # LorR='R'
-        # # current_match.opponent=name_left
-    # else:
-        # raise Exception('Could not determine if tracked team is team A or B.')
-    # # print(AorB)
-    # print(f"Reading scoresheet for match {current_match.id} against {current_match.opponent}")
-
-    # # get number of players
-    # if LorR=='L':
-        # n_players_str=pdf2str(pdffile,coords.n_players_left)
-        # coord_player_num=copy.copy(coords.player_numbers_left)
-        # coord_player_name=copy.copy(coords.player_names_left)
-    # else:
-        # n_players_str=pdf2str(pdffile,coords.n_players_right)
-        # coord_player_num=copy.copy(coords.player_numbers_right)
-        # coord_player_name=copy.copy(coords.player_names_right)
-
-    # current_match.n_players = int(re.findall('\d+', n_players_str)[0])
-
-    # # if AorB=='A':
-        # # current_match.n_players=n_playersA
-        # # coord_player_num=coords.player_numbersA
-        # # coord_player_name=coords.player_namesA
-    # # else:
-        # # current_match.n_players=n_playersB
-        # # coord_player_num=coords.player_numbersB
-        # # coord_player_name=coords.player_namesB
-
-    # # get player numbers and names
-    # for iplayer in range(current_match.n_players):
-        # # print(iplayer)
-        # number=pdf2str(pdffile, coord_player_num)
-        # name=pdf2str(pdffile, coord_player_name)
-        # # print(iplayer)
-        # # print(coord_player_num)
-        # # print(coord_player_name)
-        # # print(number,name)
-        # if (number=='') or (name==''):
-            # raise Exception(f"Could not read all players from playerinfo.\nSuccessfully read:{current_match.player_names}.")
-        # # current_match.player_numbers.append(int(number))
-        # name=re.sub('^[C|★] ', '', name)
-        # current_match.players.append(player(name=name, number=int(number)))
-        # # print(number, name)
-        # coord_player_num.y+=coords.playerinfo_vstride
-        # coord_player_name.y+=coords.playerinfo_vstride
-
-
-
-
-    # extract information from score sheet
+################################################################################
+# extract information from score sheet                                         #
+################################################################################
     for iset in range(4):
         # read final results
         scoreA_str=pdf2str(pdffile, coords.VBset[iset].final_scoreA)

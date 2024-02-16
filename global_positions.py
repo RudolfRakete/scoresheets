@@ -2,8 +2,8 @@ from utils import *
 
 title=pdf_box(300, 24, 300, 38)
 
-teamlist_left=pdf_box(590, 296, 113, 215)
-teamlist_right=pdf_box(706, 296, 113, 215)
+teamlist_left=pdf_box(590, 296, 113, 255)
+teamlist_right=pdf_box(706, 296, 113, 255)
 
 # coordinates of team names (taken from player overview)
 letter_left =pdf_box(590  , 296.16, 12, 14)

@@ -1,15 +1,19 @@
 \documentclass{standalone}
 \usepackage{multirow}
 \usepackage{booktabs}
+\usepackage[table]{xcolor}
+
 \newcommand\myhline{\cmidrule(r){1-2}\cmidrule(lr){3-6}\cmidrule(lr){7-12}\cmidrule(l){13-18}}
 %\newcommand\myhline{\cmidrule(r){1-2}\cmidrule(lr){3-6}\cmidrule(lr){7-9}\cmidrule(lr){10-12}\cmidrule(lr){13-15}\cmidrule(l){16-18}}
+\def\arraystretch{1.2}
 \begin{document}
    \begin{tabular}{l}
    TITLE\\
+   \rowcolors{2}{gray!10}{white}
       \begin{tabular}{ ll r rrr rrr rrr rrr rrr}
 \toprule
          && \multicolumn{4}{c}{Punkte} & \multicolumn{6}{c}{Sätze} & \multicolumn{6}{c}{Spiele}\\%\myhline
-         Name & Nummer(n) & anw. & gespielt & \%\,ges. & \%\,anwesend & beteiligt & \%\,ges. & \%\,anw. & gestartet & \%\,ges. & \%\,anw. & beteiligt & \%\,ges. & \%\,anw. & gestartet & \%\,ges. & \%\,anw. \\\myhline
+         Name & Nummer(n) & anwesend & gespielt & \%\,insg. & \%\,anw. & beteiligt & \%\,insg. & \%\,anw. & gestartet & \%\,insg. & \%\,anw. & beteiligt & \%\,insg. & \%\,anw. & gestartet & \%\,insg. & \%\,anw. \\\myhline
       TABLE
       \bottomrule
       \end{tabular}

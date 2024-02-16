@@ -230,7 +230,13 @@ class player_statistics:
 
         return self
 
-        # print(f"Result: {self}\n\n")
+
+    def __str__(self):
+        str=f"Name: {self.name}\n"
+        # str+=f"
+
+        return str
+
 
 
 
