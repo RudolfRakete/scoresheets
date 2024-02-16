@@ -44,10 +44,5 @@ for fname in scoresheets:
     stat.add_scoresheet(fname)
 
 
-# Save new statistics (copying old file to backup if found)
-fname_stat=f"./files/statistics_{team_name}.dat"
-fname_stat_backup=f"./files/statistics_{team_name}_backup.dat"
-if os.path.isfile(fname_stat):
-    shutil.copy(fname_stat, fname_stat_backup)
-with open(fname_stat, 'wb') as f:
-    pickle.dump([stat], f)
+# Save new statistics 
+save_stat_file(stat, team_name)

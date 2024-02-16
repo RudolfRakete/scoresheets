@@ -1,4 +1,6 @@
 import os
+import shutil
+import pickle
 import re
 import datetime
 from dataclasses import dataclass, field
@@ -141,3 +143,24 @@ def list_saved_team_names():
 
     name_str=', '.join(name_list)
     return name_str
+
+def save_stat_file(stat, team_name):
+    fname_stat=f"./files/statistics_{team_name}.dat"
+    fname_stat_backup=f"./files/statistics_{team_name}_backup.dat"
+    if not os.path.isdir('./files'):
+        os.mkdir('./files/')
+    if os.path.isfile(fname_stat):
+        shutil.copy(fname_stat, fname_stat_backup)
+    with open(fname_stat, 'wb') as f:
+        pickle.dump([stat], f)
+
+def load_stat_file(team_name):
+    fname_stat=f"./files/statistics_{team_name}.dat"
+    fname_stat_backup=f"./files/statistics_{team_name}_backup.dat"
+    if not os.path.isfile(fname_stat):
+        raise Exception('Could not find file {fname_stat} with game statistics. Call new_statistics.py.')
+    # copy old file as backup
+    shutil.copy(fname_stat, fname_stat_backup)
+    with open(fname_stat, 'rb') as f:
+        stat = pickle.load(f)[0]
+    return stat

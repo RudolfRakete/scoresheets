@@ -18,13 +18,12 @@ if len(sys.argv)==1:
 team_name=sys.argv[1]
 # team_name='SVP'
 
-fname=f"./files/statistics_{team_name}.dat"
-if not os.path.isfile(fname):
-    raise Exception('Could not find file with game statistice call main.py with the correct team names set.')
-with open(fname, 'rb') as f:
-    stat = pickle.load(f)[0]
+stat=load_stat_file(team_name)
 
-print(stat)
+# print(stat)
+
+if not os.path.isdir('./figures'):
+    os.mkdir('./figures/')
 
 # sort players according to the smallest number in numbers list (officials go last)
 smallest_num=[]
@@ -279,11 +278,11 @@ ax1.set_yticks(yy, ylabel)
 ax1.set_xlim([0,1])
 xticks=ax1.get_xticks()
 ax1.set_xticks(xticks, ["{x:.0f} %".format(x=100*x) for x in xticks])
-fig1.subplots_adjust(left=0.2)
+fig1.subplots_adjust(left=0.25)
 # fig1.legend([h1._label,h2._label,h3._label])
 fig1.legend(plot_label)
 fig1.suptitle(title)
-# plt.show()
+plt.show()
 fig1.savefig(f"figures/{team_name}_proportions.png")
 
 
