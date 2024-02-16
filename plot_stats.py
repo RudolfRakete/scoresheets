@@ -11,16 +11,7 @@ from matplotlib import colormaps
 interactive=False
 
 if len(sys.argv)==1:
-    file_list = os.listdir('./files/')
-    name_list=[]
-    print(file_list)
-    for file in file_list:
-        reg = re.search('statistics_(.*).dat', file)
-        if reg:
-            name_list.append(reg.group(1))
-
-    name_str=', '.join(name_list)
-
+    name_str = list_saved_team_names()
     # print(file_list)
     raise Exception(f"No team name given. Found statistics files for the following teams:\n {name_str}\nCall as\npython3 plot_stats.py <team_name>")
 

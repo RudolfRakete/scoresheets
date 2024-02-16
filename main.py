@@ -1,19 +1,19 @@
 from utils import *
-from extract_positions import extract_game_info
-from game_statistics import match2stat
+# from extract_positions import extract_game_info
+from game_statistics import match2stat, statistics
 import pickle
 import glob
 
-path='./scoresheets/SVP/'
 team_name='SVP'
 team_name_regex='Preußen Berlin'
-scoresheets=glob.glob('/'.join([path,'*.pdf']))
+path=f'./scoresheets/{team_name}/'
+# scoresheets=glob.glob('/'.join([path,'*.pdf']))
 # scoresheets=glob.glob('/'.join([path,'2010.pdf']))
-# scoresheets=glob.glob('/'.join([path,'202*.pdf']))
+scoresheets=glob.glob('/'.join([path,'202*.pdf']))
 
-# path='./scoresheets/BVV/'
 # team_name='BVV'
 # team_name_regex='Berliner VV'
+# path=f'./scoresheets/{team_name}/'
 # scoresheets=glob.glob('/'.join([path,'*.pdf']))
 
 # path='./scoresheets/BRV/'
@@ -26,17 +26,19 @@ scoresheets=glob.glob('/'.join([path,'*.pdf']))
 # scoresheets=['./scoresheets/2074.pdf']
 
 
-stat = statistics()
+stat = statistics(team_name=team_name, team_name_regex=team_name_regex)
 for imatch in range(len(scoresheets)):
     # print(f"Reading {scoresheets[imatch]}")
-    match=extract_game_info(scoresheets[imatch],team_name_regex)
+    # match=extract_game_info(scoresheets[imatch],team_name_regex)
 
 
     # print(match)
-    match_stat=match2stat(match)
+    # match_stat=match2stat(match)
     # print('match_stat:', match_stat)
 
-    stat+=match_stat
+    # stat+=match_stat
+
+    stat=stat.add_scoresheet(scoresheets[imatch])
     # print('stat after addition:',stat)
 
 
