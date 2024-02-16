@@ -131,7 +131,6 @@ n_data=len(plot_data)
 ################################################################################
 # print and export table with player statistics                                #
 ################################################################################
-fname_tex=f'files/table_{team_name}.tex'
 n_matches=len(stat.matches)
 # title='Statistics for {n_matches} matches from {first} to {last}.'.format(n_matches=n_matches, first=stat.first_date.strftime('%d.%m.%Y'), last=stat.last_date.strftime('%d.%m.%Y'))
 title='Statistik für {n_matches} Spiele des {team_name} vom {first} bis {last}.'.format(n_matches=n_matches, team_name=team_name, first=stat.first_date.strftime('%d.%m.%Y'), last=stat.last_date.strftime('%d.%m.%Y'))
@@ -166,12 +165,16 @@ header2='{name:20s} | {numbers:8s} | {presence_ratio:8s} | {p_involved:4s} | {p_
 tex_header1='&& \\multicolumn{4}{|c|}{Punkte} & \\multicolumn{6}{|c|}{Sätze} & \\multicolumn{3}{|c|}{Spiele}\\\\\n'
 tex_header2=header2.replace('|','&')
 tex_header2=tex_header2.replace('%','\\%')
+html_header1="<tr><th></th> "*2+"<th colspan=4>Punkte</th> <th colspan=6>Sätze</th> <th colspan=3>Spiele</th></tr>\n"
+html_header2="<tr><th>Name</th><th>Nummern</th><th abbr='anw.'>anwesend</th> <th abbr='gesp.'>gespielt</th><th abbr='% ges.'>% gesamt</th><th abbr='%anw.'>% anwesend</th> <th abbr='start.'>gestartet</th><th abbr='% ges.'>% gesamt</th><th abbr='%anw.'>% anwesend</th> <th abbr='anw.'>anwesend</th><th abbr='% ges.'>% gesamt</th><th abbr='%anw.'>% anwesend</th> <th abbr='bet.'>beteiligt</th><th abbr='% ges.'>% gesamt</th><th abbr='%anw.'>% anwesend</th> <th abbr='start.'>gestartet</th><th abbr='% ges.'>% gesamt</th><th abbr='%anw.'>% anwesend</th></tr>\n"
+
 print(title)
 print(header1)
 print(header2)
 # print(tex_header)
 
 tex_table=''
+html_table=''
 for iplayer in range(len(stat.player)):
     p_present=sum(points_present[iplayer])
     p_present_as_player=sum([points_present[iplayer][i] for i in range(len(points_present[iplayer])) if type(nums[iplayer][i])==int])
@@ -223,9 +226,31 @@ for iplayer in range(len(stat.player)):
     tex_line=tex_line.replace('%','\\%')
     tex_line+='\\\\\n'
     tex_table+=tex_line
+    html_line=line.replace('|','</td><td>')
+    html_line="<tr><td>"+html_line+"</td></tr>\n"
+    html_table+=html_line
     print(line)
     # print(tex_line)
 
+
+# last line with totals
+tex_table+="\\myhline\n"
+html_table+="<tr class=\"hline\"><td colspan=2></td><td colspan=4></td> <td colspan=6></td> <td colspan=6></td></tr>\n"
+line='{name:20s} | | | {p_involved:4d} | | | {s_involved:2d} | | | | | | {m_involved:2d} | | | | | '.format(
+        name='Total',
+        p_involved=stat.total_points,
+        s_involved=stat.total_sets,
+        m_involved=stat.total_matches
+        )
+
+tex_line=line.replace('|','&')
+tex_line=tex_line.replace('%','\\%')
+tex_line+='\\\\\n'
+tex_table+=tex_line
+html_line=line.replace('|','</td><td>')
+html_line="<tr><td>"+html_line+"</td></tr>\n"
+html_table+=html_line
+print(line)
 
 with open('files/tex_wrapper.tex', 'r') as f:
     tex_wrapper = f.read()
@@ -233,6 +258,7 @@ with open('files/tex_wrapper.tex', 'r') as f:
 tex_wrapper=tex_wrapper.replace('TITLE', title)
 tex_wrapper=tex_wrapper.replace('TABLE', tex_table)
 
+fname_tex=f'files/table_{team_name}.tex'
 with open(fname_tex, 'w') as f:
     f.write(tex_wrapper)
 
@@ -242,6 +268,17 @@ except:
     print('Could not compile statistics table to pdf. Skipping.')
     # ret=os.popen(ex_call).read()
 
+with open('files/html_table_wrapper.html', 'r') as f:
+    html_wrapper = f.read()
+# print(html_wrapper)
+html_wrapper=html_wrapper.replace('TITLE', title)
+fname_plot=f"{team_name}_proportions.png"
+html_wrapper=html_wrapper.replace('FNAME_PLOT', fname_plot)
+html_wrapper=html_wrapper.replace('TABLE', html_table)
+
+fname_html=f'files/table_{team_name}.html'
+with open(fname_html, 'w') as f:
+    f.write(html_wrapper)
 
 ################################################################################
 # Plot bar chart                                                               #
@@ -283,7 +320,7 @@ fig1.subplots_adjust(left=0.25)
 fig1.legend(plot_label)
 fig1.suptitle(title)
 plt.show()
-fig1.savefig(f"figures/{team_name}_proportions.png")
+fig1.savefig(f"figures/"+fname_plot)
 
 
 
