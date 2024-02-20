@@ -1,7 +1,9 @@
 # import re
 import datetime
+from difflib import SequenceMatcher
 from dataclasses import dataclass, field
 from extract_positions import extract_game_info
+import config as cnfg
 
 @dataclass
 class player_statistics:
@@ -42,7 +44,9 @@ class player_statistics:
         if not other.matches_present:
             raise Exception(f"Can not add player statistics without match id.\nself:\n{self}\nother:\n{other}")
 
-        if (self.name!=other.name):
+        # if (self.name!=other.name):
+        closeness=SequenceMatcher(None, self.name, other.name).ratio()
+        if closeness<cnfg.name_closeness_threshold:
             raise Exception(f"Trying to add stats of {other.name} to stats of {self.name}")
         # print(f"Adding \n{other}\nto \n{self}")
 
@@ -58,7 +62,7 @@ class player_statistics:
             if (match_id in self.matches_present):
                 ind_match=self.matches_present.index(match_id)
                 # check if items in list exist (may not exist when lazily adding player_statistics with only partially set stats)
-                if len(other.dates)>=i+1:            self.dates[ind_match]            += other.dates[i]
+                # if len(other.dates)>=i+1:            self.dates[ind_match]            += other.dates[i]
                 #
                 if len(other.matches_started)>=i+1:  self.matches_started[ind_match]  += other.matches_started[i]
                 if len(other.matches_involved)>=i+1: self.matches_involved[ind_match] += other.matches_involved[i]
@@ -150,8 +154,12 @@ class statistics:
     def get_player_stat(self, name):
         # returns or creates a new player_statistics class and appends to list
         for p in self.player:
-            if name==p.name:
+            closeness=SequenceMatcher(None, name, p.name).ratio()
+            if closeness>cnfg.name_closeness_threshold:
+                # print(f"Found incomplete name match: {p.name} | {name} | {closeness}")
                 return p
+            # if name==p.name:
+                # return p
         new_player=player_statistics()
         new_player.name=name
         self.player.append(new_player)

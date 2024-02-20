@@ -92,6 +92,7 @@ def extract_game_info(pdffile, team_name_regex):
             # remove special marks from player names (neede twice if both are present)
             name=re.sub('^[C|★] ', '', name)
             name=re.sub('^[C|★] ', '', name)
+            name=re.sub('X$', '', name)
             if not is_libero:
                 current_match.players.append(player(name=name, number=int(number)))
             else:
