@@ -197,7 +197,9 @@ for iplayer in range(len(stat.player)):
     p_involved_ratio2_str = "{:3.0f}".format(p_involved/p_present_as_player*100) if p_present_as_player>0 else ''
     s_involved_ratio2_str = "{:3.0f}".format(s_involved/s_present_as_player*100) if s_present_as_player>0 else ''
     s_started_ratio2_str  = "{:3.0f}".format(s_started /s_present_as_player*100) if s_present_as_player>0 else ''
-    line='{name:20s} | {numbers:8s} | {presence_ratio:3.0f}% | {p_involved:4d} | {p_involved_ratio1:3.0f}% | {p_involved_ratio2:s}% | {s_involved:2d} | {s_involved_ratio1:3.0f}% | {s_involved_ratio2:s}% | {s_started:2d} | {s_started_ratio1:3.0f}% | {s_started_ratio2:s}% | {m_involved:2d} | {m_involved_ratio1:3.0f}% | {m_involved_ratio2:3.0f}% | {m_started:2d} | {m_started_ratio1:3.0f}% | {m_started_ratio2:3.0f}%'.format(
+    m_involved_ratio2_str = "{:3.0f}".format(m_involved/m_present_as_player*100) if m_present_as_player>0 else ''
+    m_started_ratio2_str = "{:3.0f}".format(m_started/m_present_as_player*100) if m_present_as_player>0 else ''
+    line='{name:20s} | {numbers:8s} | {presence_ratio:3.0f}% | {p_involved:4d} | {p_involved_ratio1:3.0f}% | {p_involved_ratio2:s}% | {s_involved:2d} | {s_involved_ratio1:3.0f}% | {s_involved_ratio2:s}% | {s_started:2d} | {s_started_ratio1:3.0f}% | {s_started_ratio2:s}% | {m_involved:2d} | {m_involved_ratio1:3.0f}% | {m_involved_ratio2:3s}% | {m_started:2d} | {m_started_ratio1:3.0f}% | {m_started_ratio2:3s}%'.format(
         name=stat.player[iplayer].name,
         numbers=','.join([f"{x}" for x in set(stat.player[iplayer].numbers)]),
         #
@@ -216,11 +218,11 @@ for iplayer in range(len(stat.player)):
         #
         m_involved=m_involved,
         m_involved_ratio1=m_involved/stat.total_matches*100,
-        m_involved_ratio2=m_involved/m_present*100,
+        m_involved_ratio2=m_involved_ratio2_str,
         #
         m_started=m_started,
         m_started_ratio1=m_started/stat.total_matches*100,
-        m_started_ratio2=m_started/m_present*100,
+        m_started_ratio2=m_started_ratio2_str,
         )
     tex_line=line.replace('|','&')
     tex_line=tex_line.replace('%','\\%')
@@ -271,10 +273,11 @@ except:
 with open('files/html_table_wrapper.html', 'r') as f:
     html_wrapper = f.read()
 # print(html_wrapper)
-html_wrapper=html_wrapper.replace('TITLE', title)
+html_wrapper=html_wrapper.replace('#TITLE', title)
 fname_plot=f"{team_name}_proportions.png"
-html_wrapper=html_wrapper.replace('FNAME_PLOT', fname_plot)
-html_wrapper=html_wrapper.replace('TABLE', html_table)
+html_wrapper=html_wrapper.replace('#FNAME_PLOT', fname_plot)
+html_wrapper=html_wrapper.replace('#TABLE', html_table)
+html_wrapper=html_wrapper.replace('#TEAM_NAME', team_name)
 
 fname_html=f'files/table_{team_name}.html'
 with open(fname_html, 'w') as f:
